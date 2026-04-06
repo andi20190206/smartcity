@@ -1,26 +1,40 @@
 import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, CheckCircle, XCircle, Clock, Loader, FileText, User, Building2, Car, Send, ShieldCheck } from 'lucide-react'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { ChevronLeft, CheckCircle, XCircle, Clock, FileText, User, Building2, Car, Send, ArrowRightLeft, ChevronDown } from 'lucide-react'
 import { mockApprovals } from '../../shared/mock/approvalMock'
 import { approvalStatusTagColor, approvalTypeTagColor } from '../../shared/constants/approvalStatusMap'
+
+const transferCandidates = [
+  { id: 'u1', name: '陈经理', role: '经销公司管理员', company: '广州天河旗舰店' },
+  { id: 'u2', name: '王总', role: '经销公司管理员', company: '深圳福田精品店' },
+  { id: 'u3', name: '刘主管', role: '平台审批员', company: '平台' },
+  { id: 'u4', name: '赵财务', role: '财务主管', company: '广州天河旗舰店' },
+  { id: 'u5', name: '银行审批岗', role: '资方审批员', company: '合作银行' },
+]
 
 export default function ApprovalDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const initialAction = searchParams.get('action') as 'approve' | 'reject' | 'transfer' | null
   const record = mockApprovals.find((r) => r.id === id)
-  const [action, setAction] = useState<'approve' | 'reject' | null>(null)
+  const [action, setAction] = useState<'approve' | 'reject' | 'transfer' | null>(initialAction)
   const [opinion, setOpinion] = useState('')
+  const [transferTo, setTransferTo] = useState<string | null>(null)
+  const [showTransferPicker, setShowTransferPicker] = useState(false)
 
   if (!record) {
     return (
       <div className="page">
-        <div className="nav-dark"><button className="nav-back" onClick={() => navigate(-1)}><ChevronLeft size={22} /></button><div className="nav-title">审批详情</div><div className="nav-right" /></div>
+        <div className="nav-dark">
+          <button className="nav-back" onClick={() => navigate(-1)}><ChevronLeft size={22} /></button>
+          <div className="nav-title">审批详情</div>
+          <div className="nav-right" />
+        </div>
         <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-2)' }}>未找到审批记录</div>
       </div>
     )
   }
-
-  const sts = approvalStatusTagColor[record.status] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
   const tts = approvalTypeTagColor[record.type] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
   const isPending = record.status === 'pending' || record.status === 'approving'
 
@@ -34,13 +48,19 @@ export default function ApprovalDetail() {
   }
 
   const handleSubmit = () => {
-    alert(`操作: ${action === 'approve' ? '通过' : '驳回'}\n意见: ${opinion}`)
+    if (action === 'transfer') {
+      const target = transferCandidates.find((c) => c.id === transferTo)
+      alert(`转交审批: ${record.id}\n转交给: ${target?.name}（${target?.role}）\n转交说明: ${opinion}`)
+    } else {
+      alert(`操作: ${action === 'approve' ? '通过' : '驳回'}\n意见: ${opinion}`)
+    }
     setAction(null)
     setOpinion('')
+    setTransferTo(null)
   }
 
   return (
-    <div className="page" style={{ paddingBottom: isPending ? 180 : 40 }}>
+    <div className="page" style={{ paddingBottom: isPending ? 200 : 40 }}>
       <div className="nav-dark" style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #2D2D44 100%)' }}>
         <button className="nav-back" onClick={() => navigate(-1)}><ChevronLeft size={22} /></button>
         <div className="nav-title">审批详情</div>
@@ -120,7 +140,6 @@ export default function ApprovalDetail() {
           </div>
         ))}
       </div>
-
       {/* 审批流程 */}
       <div className="section-hd">审批流程</div>
       <div className="anim d3" style={{
@@ -205,12 +224,59 @@ export default function ApprovalDetail() {
         }}>
           {action ? (
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: action === 'reject' ? 'var(--red)' : 'var(--text-0)' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: action === 'reject' ? 'var(--red)' : action === 'transfer' ? 'var(--blue)' : 'var(--text-0)' }}>
                 {action === 'approve' ? '审批通过' : action === 'reject' ? '审批驳回' : '转交审批'}
               </div>
+
+              {/* 转交人选择 */}
+              {action === 'transfer' && (
+                <div style={{ marginBottom: 10 }}>
+                  <div onClick={() => setShowTransferPicker(!showTransferPicker)} style={{
+                    padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border)',
+                    background: 'var(--bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    cursor: 'pointer',
+                  }}>
+                    <span style={{ fontSize: 14, color: transferTo ? 'var(--text-0)' : 'var(--text-2)' }}>
+                      {transferTo ? (() => {
+                        const t = transferCandidates.find((c) => c.id === transferTo)
+                        return `${t?.name}（${t?.role}）- ${t?.company}`
+                      })() : '请选择转交人'}
+                    </span>
+                    <ChevronDown size={16} color="var(--text-2)" style={{ transform: showTransferPicker ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                  </div>
+                  {showTransferPicker && (
+                    <div style={{
+                      marginTop: 6, borderRadius: 10, border: '1px solid var(--border)',
+                      background: '#fff', overflow: 'hidden', boxShadow: 'var(--shadow-md)',
+                      maxHeight: 200, overflowY: 'auto',
+                    }}>
+                      {transferCandidates.map((c) => (
+                        <div key={c.id} onClick={() => { setTransferTo(c.id); setShowTransferPicker(false) }} style={{
+                          padding: '10px 12px', borderBottom: '1px solid var(--border)',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10,
+                          background: transferTo === c.id ? 'var(--blue-bg)' : '#fff',
+                        }}>
+                          <div style={{
+                            width: 28, height: 28, borderRadius: '50%', background: 'var(--blue-bg)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                          }}>
+                            <User size={14} color="var(--blue)" />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-0)' }}>{c.name}（{c.role}）</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-2)' }}>{c.company}</div>
+                          </div>
+                          {transferTo === c.id && <CheckCircle size={16} color="var(--blue)" style={{ marginLeft: 'auto' }} />}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <textarea
                 value={opinion} onChange={(e) => setOpinion(e.target.value)}
-                placeholder={action === 'approve' ? '请输入审批意见（选填）' : '请输入审批意见'}
+                placeholder={action === 'approve' ? '请输入审批意见（选填）' : action === 'transfer' ? '请输入转交说明（选填）' : '请输入驳回原因（必填）'}
                 style={{
                   width: '100%', height: 60, borderRadius: 10, border: '1px solid var(--border)',
                   padding: '10px 12px', fontSize: 14, resize: 'none', outline: 'none',
@@ -218,15 +284,20 @@ export default function ApprovalDetail() {
                 }}
               />
               <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-                <button onClick={() => { setAction(null); setOpinion('') }} className="btn-secondary" style={{ flex: 1, padding: 12 }}>取消</button>
-                <button onClick={handleSubmit} className="btn-primary" style={{
-                  flex: 1, padding: 12,
-                  background: action === 'reject' ? 'var(--red)' : 'var(--brand)',
-                  boxShadow: action === 'reject' ? '0 4px 12px rgba(255,59,48,0.2)' : undefined,
-                }}>
+                <button onClick={() => { setAction(null); setOpinion(''); setTransferTo(null); setShowTransferPicker(false) }} className="btn-secondary" style={{ flex: 1, padding: 12 }}>取消</button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={action === 'transfer' && !transferTo}
+                  className="btn-primary"
+                  style={{
+                    flex: 1, padding: 12,
+                    background: action === 'reject' ? 'var(--red)' : action === 'transfer' ? 'var(--blue)' : 'var(--brand)',
+                    boxShadow: action === 'reject' ? '0 4px 12px rgba(255,59,48,0.2)' : action === 'transfer' ? '0 4px 12px rgba(0,122,255,0.2)' : undefined,
+                    opacity: action === 'transfer' && !transferTo ? 0.5 : 1,
+                  }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                    <Send size={14} />
-                    确认提交
+                    {action === 'transfer' ? <ArrowRightLeft size={14} /> : <Send size={14} />}
+                    {action === 'transfer' ? '确认转交' : '确认提交'}
                   </div>
                 </button>
               </div>
@@ -238,6 +309,14 @@ export default function ApprovalDetail() {
                 background: 'var(--red-bg)', color: 'var(--red)', fontSize: 15, fontWeight: 600,
                 fontFamily: 'var(--font-display)', cursor: 'pointer',
               }}>驳回</button>
+              <button onClick={() => setAction('transfer')} style={{
+                flex: 1, padding: '12px 0', borderRadius: 12, border: '1.5px solid var(--blue)',
+                background: 'var(--blue-bg)', color: 'var(--blue)', fontSize: 15, fontWeight: 600,
+                fontFamily: 'var(--font-display)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+              }}>
+                <ArrowRightLeft size={15} /> 转交
+              </button>
               <button onClick={() => setAction('approve')} className="btn-primary" style={{ flex: 1.5, padding: 12 }}>
                 通过
               </button>

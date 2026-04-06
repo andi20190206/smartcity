@@ -153,15 +153,14 @@ export default function ApprovalList() {
                 margin: '10px 16px', borderRadius: 14,
                 border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)',
                 overflow: 'hidden', cursor: 'pointer',
-                background: isFinished ? '#fafafa' : '#fff',
-                opacity: isFinished ? 0.7 : 1,
+                background: '#fff',
                 transition: 'opacity 0.2s',
               }}>
               {/* Header */}
               <div style={{ padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: 0.3, color: isFinished ? 'var(--text-2)' : 'var(--text-0)' }}>{item.id}</span>
-                  <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 600, background: isFinished ? 'rgba(0,0,0,0.04)' : tts.bg, color: isFinished ? 'var(--text-2)' : tts.color }}>{item.typeText}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: 0.3, color: 'var(--text-0)' }}>{item.id}</span>
+                  <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 600, background: tts.bg, color: tts.color }}>{item.typeText}</span>
                 </div>
                 <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 5, fontWeight: 600, background: sts.bg, color: sts.color }}>
                   {item.statusText}
@@ -170,11 +169,11 @@ export default function ApprovalList() {
 
               {/* Body */}
               <div style={{ padding: '10px 14px' }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: isFinished ? 'var(--text-2)' : 'var(--text-0)', marginBottom: 6, lineHeight: 1.4 }}>{item.summary}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-0)', marginBottom: 6, lineHeight: 1.4 }}>{item.summary}</div>
                 {item.amount !== undefined && (
                   <div style={{ marginBottom: 6 }}>
-                    <span className="price" style={{ fontSize: 18, color: isFinished ? 'var(--text-2)' : undefined }}>{item.amount.toFixed(2)}</span>
-                    <span style={{ fontSize: 11, color: isFinished ? 'var(--text-2)' : 'var(--brand)', marginLeft: 1 }}>万</span>
+                    <span className="price" style={{ fontSize: 18 }}>{item.amount.toFixed(2)}</span>
+                    <span style={{ fontSize: 11, color: 'var(--brand)', marginLeft: 1 }}>万</span>
                   </div>
                 )}
 
@@ -189,7 +188,7 @@ export default function ApprovalList() {
                       {item.status === 'approved'
                         ? <CheckCircle size={13} color="var(--green)" />
                         : <XCircle size={13} color="var(--red)" />}
-                      <span style={{ fontSize: 12, color: 'var(--text-2)' }}>
+                      <span style={{ fontSize: 12, color: item.status === 'approved' ? 'var(--green)' : 'var(--red)' }}>
                         {item.status === 'approved' ? '审批已全部通过' : `已被 ${item.nodes.find((n) => n.status === 'rejected')?.approverName} 驳回`}
                       </span>
                     </>

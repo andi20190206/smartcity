@@ -94,7 +94,7 @@ function ApprovalProgress({ record }: { record: ApprovalRecord }) {
     <Popover content={popoverContent} title={<span style={{ fontSize: 13, fontWeight: 600 }}>审批流程 · {record.id}</span>} placement="bottom">
       <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
         {isFinished ? (
-          <span style={{ fontSize: 12, color: '#bfbfbf' }}>
+          <span style={{ fontSize: 12, color: record.status === 'approved' ? '#52c41a' : '#ff4d4f' }}>
             {record.status === 'approved' ? '全部通过' : '已驳回'}
           </span>
         ) : pendingNode ? (
@@ -146,9 +146,6 @@ export default function ApprovalListPC() {
     rejected: mockApprovals.filter((a) => a.status === 'rejected').length,
   }), [])
 
-  /** 已审批过的行灰度展示 */
-  const isFinished = (record: ApprovalRecord) => record.status === 'approved' || record.status === 'rejected'
-
   const columns: ColumnsType<ApprovalRecord> = [
     {
       title: '审批单号',
@@ -156,10 +153,9 @@ export default function ApprovalListPC() {
       key: 'id',
       width: 150,
       fixed: 'left',
-      render: (id: string, record: ApprovalRecord) => (
+      render: (id: string) => (
         <a onClick={() => navigate(`/pc/approval/${id}`)} style={{
           fontFamily: "'DM Sans', monospace", fontWeight: 600, fontSize: 13,
-          color: isFinished(record) ? '#bfbfbf' : undefined,
         }}>
           {id}
         </a>
@@ -170,8 +166,8 @@ export default function ApprovalListPC() {
       dataIndex: 'type',
       key: 'type',
       width: 100,
-      render: (type: string, record: ApprovalRecord) => (
-        <Tag color={isFinished(record) ? 'default' : typeColorMap[type]} style={{ borderRadius: 4 }}>
+      render: (type: string) => (
+        <Tag color={typeColorMap[type]} style={{ borderRadius: 4 }}>
           {approvalTypeText[type] || type}
         </Tag>
       ),
@@ -183,7 +179,7 @@ export default function ApprovalListPC() {
       width: 260,
       ellipsis: true,
       render: (summary: string, record: ApprovalRecord) => (
-        <div style={{ opacity: isFinished(record) ? 0.5 : 1 }}>
+        <div>
           <div style={{ fontSize: 13, fontWeight: 500, color: '#1a1a2e' }}>{summary}</div>
           <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 2 }}>关联单号: {record.bizOrderId}</div>
         </div>
@@ -194,7 +190,7 @@ export default function ApprovalListPC() {
       key: 'applicant',
       width: 130,
       render: (_: unknown, record: ApprovalRecord) => (
-        <div style={{ opacity: isFinished(record) ? 0.5 : 1 }}>
+        <div>
           <div style={{ fontSize: 13 }}>{record.applicant}</div>
           <div style={{ fontSize: 11, color: '#bfbfbf' }}>{record.dealerCompany}</div>
         </div>
@@ -207,10 +203,10 @@ export default function ApprovalListPC() {
       width: 100,
       align: 'right',
       sorter: (a: ApprovalRecord, b: ApprovalRecord) => (a.amount || 0) - (b.amount || 0),
-      render: (amount: number | undefined, record: ApprovalRecord) => amount !== undefined ? (
+      render: (amount: number | undefined) => amount !== undefined ? (
         <span style={{
           fontFamily: "'DM Sans', monospace", fontWeight: 600, fontSize: 14,
-          color: isFinished(record) ? '#bfbfbf' : '#E8352E',
+          color: '#E8352E',
         }}>
           {amount.toFixed(2)}
           <span style={{ fontSize: 11, fontWeight: 400, color: '#8c8c8c', marginLeft: 2 }}>万</span>
@@ -240,8 +236,8 @@ export default function ApprovalListPC() {
       key: 'createTime',
       width: 150,
       sorter: (a: ApprovalRecord, b: ApprovalRecord) => a.createTime.localeCompare(b.createTime),
-      render: (t: string, record: ApprovalRecord) => (
-        <span style={{ fontSize: 13, color: isFinished(record) ? '#d9d9d9' : '#8c8c8c' }}>{t}</span>
+      render: (t: string) => (
+        <span style={{ fontSize: 13, color: '#8c8c8c' }}>{t}</span>
       ),
     },
     {
@@ -377,7 +373,6 @@ export default function ApprovalListPC() {
             rowKey="id"
             size="middle"
             scroll={{ x: 1400 }}
-            rowClassName={(record) => isFinished(record) ? 'approval-row-finished' : ''}
             pagination={{
               pageSize: 10,
               showSizeChanger: true,
@@ -392,15 +387,7 @@ export default function ApprovalListPC() {
         </div>
       </div>
 
-      {/* 已审批行灰度样式 */}
-      <style>{`
-        .approval-row-finished td {
-          background: #fafafa !important;
-        }
-        .approval-row-finished:hover td {
-          background: #f5f5f5 !important;
-        }
-      `}</style>
+
     </div>
   )
 }

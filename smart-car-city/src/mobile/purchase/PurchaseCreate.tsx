@@ -212,6 +212,9 @@ export default function PurchaseCreate() {
   const [ownerTypeState, setOwnerTypeState] = useState<string>('个人')
   // 个体工商户收款方式
   const [indivPayMode, setIndivPayMode] = useState<string>('法人个人卡')
+  // 企业证件类型
+  const [enterpriseCertType, setEnterpriseCertType] = useState<string>('统一社会信用代码')
+  const [showCertPicker, setShowCertPicker] = useState(false)
 
   // 第3步车主证件照片状态
   const [ownerIdPhotos, setOwnerIdPhotos] = useState<Record<string, string>>({})
@@ -608,17 +611,28 @@ export default function PurchaseCreate() {
             )}
             {ownerTypeState === '企业' && (
               <>
-                <div className="weui-cell">
+                <div className="weui-cell" onClick={() => setShowCertPicker(!showCertPicker)} style={{ cursor: 'pointer' }}>
                   <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>证件类型</label></div>
-                  <div className="weui-cell__bd" style={{ fontSize: 14 }}>统一社会信用代码</div>
+                  <div className="weui-cell__bd" style={{ fontSize: 14 }}>{enterpriseCertType}</div>
+                  <div className="weui-cell__ft"><ChevronDown size={16} color="var(--text-3)" /></div>
                 </div>
+                {showCertPicker && (
+                  <div style={{ padding: '0 16px 8px', display: 'flex', gap: 8 }}>
+                    {['统一社会信用代码', '组织机构代码'].map((t) => (
+                      <div key={t} onClick={() => { setEnterpriseCertType(t); setShowCertPicker(false) }} style={{
+                        flex: 1, textAlign: 'center', padding: '8px 0', borderRadius: 6, fontSize: 13, cursor: 'pointer',
+                        background: enterpriseCertType === t ? 'var(--brand)' : 'var(--bg)', color: enterpriseCertType === t ? '#fff' : 'var(--text-1)',
+                      }}>{t}</div>
+                    ))}
+                  </div>
+                )}
                 <div className="weui-cell">
                   <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>企业名称</label></div>
                   <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入企业名称" style={{ fontSize: 14 }} /></div>
                 </div>
                 <div className="weui-cell">
-                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>信用代码</label></div>
-                  <div className="weui-cell__bd"><input className="weui-input" placeholder="统一社会信用代码/组织机构代码" style={{ fontSize: 14 }} /></div>
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>{enterpriseCertType === '统一社会信用代码' ? '信用代码' : '机构代码'}</label></div>
+                  <div className="weui-cell__bd"><input className="weui-input" placeholder={`请输入${enterpriseCertType}`} style={{ fontSize: 14 }} /></div>
                 </div>
               </>
             )}

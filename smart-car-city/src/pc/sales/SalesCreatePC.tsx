@@ -252,7 +252,9 @@ export default function SalesCreatePC() {
               {buyerType === '企业' && (
                 <>
                   <Col span={8}>
-                    <Form.Item label="证件类型"><Input value="统一社会信用代码" disabled /></Form.Item>
+                    <Form.Item label="证件类型" name="buyerCertType" initialValue="统一社会信用代码">
+                      <Select options={[{ value: '统一社会信用代码', label: '统一社会信用代码' }, { value: '组织机构代码', label: '组织机构代码' }]} />
+                    </Form.Item>
                   </Col>
                   <Col span={8}>
                     <Form.Item label="企业名称" name="buyerName" rules={[{ required: true }]}>
@@ -260,8 +262,8 @@ export default function SalesCreatePC() {
                     </Form.Item>
                   </Col>
                   <Col span={8}>
-                    <Form.Item label="统一社会信用代码" name="buyerIdNo" rules={[{ required: true }]}>
-                      <Input placeholder="统一社会信用代码/组织机构代码" />
+                    <Form.Item label="证件号码" name="buyerIdNo" rules={[{ required: true }]}>
+                      <Input placeholder="请输入证件号码" />
                     </Form.Item>
                   </Col>
                 </>
@@ -465,6 +467,14 @@ export default function SalesCreatePC() {
                     </Upload>
                   </Space>
                 </Form.Item>
+                <Divider style={{ margin: '8px 0 16px' }} />
+                <Form.Item label={<span>代付证明文件 <span style={{ fontSize: 12, color: '#8c8c8c', fontWeight: 400 }}>（支持图片和PDF，可上传多个）</span></span>} required>
+                  <Upload.Dragger accept="image/*,.pdf" multiple beforeUpload={() => false} style={{ padding: '16px 0' }}>
+                    <p className="ant-upload-drag-icon"><UploadOutlined style={{ fontSize: 28, color: '#bfbfbf' }} /></p>
+                    <p className="ant-upload-text" style={{ fontSize: 13 }}>点击或拖拽上传代付证明</p>
+                    <p className="ant-upload-hint" style={{ fontSize: 12 }}>支持 JPG/PNG 图片和 PDF 文件，可上传多个</p>
+                  </Upload.Dragger>
+                </Form.Item>
               </>
             )}
           </Form>
@@ -563,7 +573,13 @@ export default function SalesCreatePC() {
         </Button>
         <Space>
           {currentStep < stepItems.length - 1 ? (
-            <Button type="primary" onClick={() => setCurrentStep(currentStep + 1)}
+            <Button type="primary" onClick={() => {
+              if (currentStep === 0) {
+                const missing = selectedVehicles.filter((v) => v.salesPrice === null || v.salesPrice <= 0)
+                if (missing.length > 0) { message.warning(`请填写所有已选车辆的销售价（${missing.length}台未填写）`); return }
+              }
+              setCurrentStep(currentStep + 1)
+            }}
               disabled={currentStep === 0 && selectedVehicles.length === 0}
               style={{ background: '#E8352E', borderColor: '#E8352E' }}>
               下一步

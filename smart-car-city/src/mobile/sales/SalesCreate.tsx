@@ -36,6 +36,13 @@ export default function SalesCreate() {
 
   // 个体工商户收款方式
   const [indivPayMode, setIndivPayMode] = useState<string>('法人个人卡')
+  // 企业证件类型
+  const [enterpriseCertType, setEnterpriseCertType] = useState<string>('统一社会信用代码')
+  const [showCertPicker, setShowCertPicker] = useState(false)
+  // 第三方付款人类型
+  const [thirdPayerType, setThirdPayerType] = useState<string>('个人')
+  const [thirdPayerIndivMode, setThirdPayerIndivMode] = useState<string>('法人个人卡')
+  const [thirdPayerEntCert, setThirdPayerEntCert] = useState<string>('统一社会信用代码')
 
   // 签名
   const [salesSign, setSalesSign] = useState(false)
@@ -209,10 +216,21 @@ export default function SalesCreate() {
             )}
             {buyerType === '企业' && (
               <>
-                <div className="weui-cell">
+                <div className="weui-cell" onClick={() => setShowCertPicker(!showCertPicker)} style={{ cursor: 'pointer' }}>
                   <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>证件类型</label></div>
-                  <div className="weui-cell__bd" style={{ fontSize: 14 }}>统一社会信用代码</div>
+                  <div className="weui-cell__bd" style={{ fontSize: 14 }}>{enterpriseCertType}</div>
+                  <div className="weui-cell__ft"><ChevronDown size={16} color="var(--text-3)" /></div>
                 </div>
+                {showCertPicker && (
+                  <div style={{ padding: '0 16px 8px', display: 'flex', gap: 8 }}>
+                    {['统一社会信用代码', '组织机构代码'].map((t) => (
+                      <div key={t} onClick={() => { setEnterpriseCertType(t); setShowCertPicker(false) }} style={{
+                        flex: 1, textAlign: 'center', padding: '8px 0', borderRadius: 6, fontSize: 13, cursor: 'pointer',
+                        background: enterpriseCertType === t ? 'var(--brand)' : 'var(--bg)', color: enterpriseCertType === t ? '#fff' : 'var(--text-1)',
+                      }}>{t}</div>
+                    ))}
+                  </div>
+                )}
                 <div className="weui-cell">
                   <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>企业名称</label></div>
                   <div className="weui-cell__bd">
@@ -220,9 +238,9 @@ export default function SalesCreate() {
                   </div>
                 </div>
                 <div className="weui-cell">
-                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>信用代码</label></div>
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>{enterpriseCertType === '统一社会信用代码' ? '信用代码' : '机构代码'}</label></div>
                   <div className="weui-cell__bd">
-                    <input className="weui-input" placeholder="统一社会信用代码/组织机构代码" value={buyerData.idNo} onChange={(e) => setBuyerData({ ...buyerData, idNo: e.target.value })} style={{ fontSize: 14 }} />
+                    <input className="weui-input" placeholder={`请输入${enterpriseCertType}`} value={buyerData.idNo} onChange={(e) => setBuyerData({ ...buyerData, idNo: e.target.value })} style={{ fontSize: 14 }} />
                   </div>
                 </div>
               </>
@@ -393,32 +411,132 @@ export default function SalesCreate() {
 
           {!payerIsBuyer && (
             <>
-              <div className="section-hd">付款人信息</div>
-              <div className="weui-cells">
-                {[
-                  { field: 'name' as const, label: '付款人姓名', placeholder: '请输入' },
-                  { field: 'idNo' as const, label: '证件号码', placeholder: '请输入' },
-                  { field: 'cardNo' as const, label: '银行卡号', placeholder: '请输入' },
-                  { field: 'bank' as const, label: '开户行', placeholder: '请输入' },
-                  { field: 'phone' as const, label: '预留手机', placeholder: '请输入' },
-                ].map((f) => (
-                  <div key={f.field} className="weui-cell">
-                    <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>{f.label}</label></div>
-                    <div className="weui-cell__bd">
-                      <input className="weui-input" placeholder={f.placeholder} value={payerData[f.field]} onChange={(e) => setPayerData({ ...payerData, [f.field]: e.target.value })} style={{ fontSize: 14 }} />
-                    </div>
-                  </div>
+              <div className="section-hd">第三方付款人类型</div>
+              <div style={{ padding: '0 16px 8px', display: 'flex', gap: 8 }}>
+                {['个人', '企业', '个体工商户'].map((t) => (
+                  <div key={t} onClick={() => setThirdPayerType(t)} style={{
+                    flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: 'pointer',
+                    background: thirdPayerType === t ? 'var(--brand)' : '#fff', color: thirdPayerType === t ? '#fff' : 'var(--text-1)',
+                    border: thirdPayerType === t ? 'none' : '1px solid var(--border)',
+                  }}>{t}</div>
                 ))}
               </div>
 
-              <div className="section-hd">付款人证件 & 银行卡（支持OCR）</div>
+              <div className="section-hd">付款人信息</div>
+              <div className="weui-cells">
+                {thirdPayerType === '个人' && (
+                  <>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>证件类型</label></div>
+                      <div className="weui-cell__bd" style={{ fontSize: 14 }}>身份证</div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>付款人姓名</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入姓名" value={payerData.name} onChange={(e) => setPayerData({ ...payerData, name: e.target.value })} style={{ fontSize: 14 }} /></div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>身份证号码</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入身份证号码" value={payerData.idNo} onChange={(e) => setPayerData({ ...payerData, idNo: e.target.value })} style={{ fontSize: 14 }} /></div>
+                    </div>
+                  </>
+                )}
+                {thirdPayerType === '企业' && (
+                  <>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>证件类型</label></div>
+                      <div className="weui-cell__bd" style={{ fontSize: 14 }}>{thirdPayerEntCert}</div>
+                      <div className="weui-cell__ft" onClick={() => setThirdPayerEntCert(thirdPayerEntCert === '统一社会信用代码' ? '组织机构代码' : '统一社会信用代码')}><ChevronDown size={16} color="var(--text-3)" /></div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>企业名称</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入企业名称" value={payerData.name} onChange={(e) => setPayerData({ ...payerData, name: e.target.value })} style={{ fontSize: 14 }} /></div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>{thirdPayerEntCert === '统一社会信用代码' ? '信用代码' : '机构代码'}</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder={`请输入${thirdPayerEntCert}`} value={payerData.idNo} onChange={(e) => setPayerData({ ...payerData, idNo: e.target.value })} style={{ fontSize: 14 }} /></div>
+                    </div>
+                  </>
+                )}
+                {thirdPayerType === '个体工商户' && (
+                  <>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人姓名</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入法人姓名" value={payerData.name} onChange={(e) => setPayerData({ ...payerData, name: e.target.value })} style={{ fontSize: 14 }} /></div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人证件类型</label></div>
+                      <div className="weui-cell__bd" style={{ fontSize: 14 }}>身份证 / 统一社会信用代码</div>
+                      <div className="weui-cell__ft"><ChevronDown size={16} color="var(--text-3)" /></div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人证件号码</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入法人证件号码" value={payerData.idNo} onChange={(e) => setPayerData({ ...payerData, idNo: e.target.value })} style={{ fontSize: 14 }} /></div>
+                    </div>
+                  </>
+                )}
+                <div className="weui-cell">
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>联系电话</label></div>
+                  <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入联系电话" value={payerData.phone} onChange={(e) => setPayerData({ ...payerData, phone: e.target.value })} style={{ fontSize: 14 }} /></div>
+                </div>
+              </div>
+
+              <div className="section-hd">收款账户信息</div>
+              <div className="weui-cells">
+                {thirdPayerType === '个体工商户' && (
+                  <div className="weui-cell">
+                    <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>收款方式</label></div>
+                    <div className="weui-cell__bd" style={{ display: 'flex', gap: 8 }}>
+                      {['法人个人卡', '对公账户'].map((t) => (
+                        <span key={t} onClick={() => setThirdPayerIndivMode(t)} style={{
+                          padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
+                          background: thirdPayerIndivMode === t ? 'var(--brand)' : 'var(--bg)', color: thirdPayerIndivMode === t ? '#fff' : 'var(--text-1)',
+                        }}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="weui-cell">
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>开户名</label></div>
+                  <div className="weui-cell__bd" style={{ fontSize: 14, color: 'var(--text-2)' }}>自动带入（不可修改）</div>
+                </div>
+                <div className="weui-cell">
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>{thirdPayerType === '企业' || (thirdPayerType === '个体工商户' && thirdPayerIndivMode === '对公账户') ? '对公账号' : '银行卡号'}</label></div>
+                  <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入" value={payerData.cardNo} onChange={(e) => setPayerData({ ...payerData, cardNo: e.target.value })} style={{ fontSize: 14 }} /></div>
+                </div>
+                <div className="weui-cell">
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>所属银行</label></div>
+                  <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入所属银行" value={payerData.bank} onChange={(e) => setPayerData({ ...payerData, bank: e.target.value })} style={{ fontSize: 14 }} /></div>
+                </div>
+                {(thirdPayerType === '个人' || (thirdPayerType === '个体工商户' && thirdPayerIndivMode === '法人个人卡')) && (
+                  <div className="weui-cell">
+                    <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>预留手机</label></div>
+                    <div className="weui-cell__bd"><input className="weui-input" placeholder="银行预留手机号" value={payerData.phone} onChange={(e) => setPayerData({ ...payerData, phone: e.target.value })} style={{ fontSize: 14 }} /></div>
+                  </div>
+                )}
+              </div>
+              {(thirdPayerType === '企业' || (thirdPayerType === '个体工商户' && thirdPayerIndivMode === '对公账户')) && (
+                <div style={{ margin: '8px 16px', background: 'var(--blue-bg)', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: 'var(--blue)' }}>
+                  ℹ️ 系统会自动向该对公账户转入0.01元用于验证账号有效性
+                </div>
+              )}
+
+              <div className="section-hd">付款人证件（支持OCR）</div>
               <div style={{ padding: '0 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-                {['付款人证件', '银行卡正面'].map((label) => (
+                {(thirdPayerType === '企业' ? ['营业执照'] : thirdPayerType === '个体工商户' ? ['法人身份证正面', '法人身份证反面', '营业执照'] : ['身份证正面', '身份证反面']).map((label) => (
                   <div key={label} className="upload-area" style={{ aspectRatio: '3/2', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                     <Camera size={24} color="var(--text-3)" />
                     <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{label}</span>
                   </div>
                 ))}
+              </div>
+
+              <div className="section-hd">代付证明文件（支持图片和PDF，多文件）</div>
+              <div style={{ padding: '0 16px' }}>
+                <div className="upload-area" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20 }}>
+                  <FileText size={20} color="var(--text-3)" />
+                  <span style={{ fontSize: 14, color: 'var(--text-2)' }}>点击上传代付证明</span>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4, textAlign: 'center' }}>支持图片（JPG/PNG）和PDF格式，可上传多个文件</div>
               </div>
             </>
           )}
@@ -490,7 +608,13 @@ export default function SalesCreate() {
           <>
             <button className="btn-secondary" style={{ flex: 1 }} onClick={fillTestData}>填充测试</button>
             <button className="btn-primary" style={{ flex: 2 }}
-              onClick={() => setStep(step + 1)}
+              onClick={() => {
+                if (step === 0) {
+                  const missing = selectedVehicles.filter((v) => !v.salesPrice || parseFloat(v.salesPrice) <= 0)
+                  if (missing.length > 0) { alert(`请填写所有已选车辆的销售价（${missing.length}台未填写）`); return }
+                }
+                setStep(step + 1)
+              }}
               disabled={step === 0 && selectedVehicles.length === 0}>
               下一步
             </button>

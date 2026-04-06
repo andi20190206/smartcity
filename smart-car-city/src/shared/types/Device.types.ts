@@ -16,8 +16,15 @@ export interface DeviceRecord {
   ownerPhone: string
   companyName: string
   storeName: string
+  /** GPS/RFID 绑定车辆 */
   bindVin: string
   bindPlateNo: string
+  /** 摄像头绑定仓库 */
+  bindWarehouse: string
+  /** 摄像头安装位置（入口/出口/内部等） */
+  installPosition: string
+  /** 摄像头分辨率 */
+  resolution: string
   location: string
   lastHeartbeat: string
   installDate: string

@@ -68,6 +68,9 @@ import TenantDetailPC from './pc/tenant/TenantDetailPC'
 // PC 端 - 配置中心
 import ConfigCenterPC from './pc/config/ConfigCenterPC'
 
+// 入口选择页
+import Portal from './Portal'
+
 export default function App() {
   return (
     <Routes>
@@ -135,9 +138,9 @@ export default function App() {
       <Route path="/contract" element={<ContractList />} />
       <Route path="/contract/detail/:id" element={<ContractDetail />} />
 
-      {/* 默认跳转 */}
-      <Route path="/" element={<Navigate to="/home" replace />} />
-      <Route path="*" element={<Navigate to="/home" replace />} />
+      {/* 入口选择页 */}
+      <Route path="/" element={<Portal />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

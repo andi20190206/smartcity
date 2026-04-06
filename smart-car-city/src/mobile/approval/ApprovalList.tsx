@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, Search, ChevronRight, Clock, CheckCircle, XCircle, Loader, Filter, ShieldCheck, User } from 'lucide-react'
+import { ChevronLeft, Search, ChevronRight, Clock, CheckCircle, XCircle, Filter, ShieldCheck, User, Send, ArrowRightLeft } from 'lucide-react'
 import { mockApprovals } from '../../shared/mock/approvalMock'
-import { approvalStatusTabs, approvalStatusTagColor, approvalTypeTagColor } from '../../shared/constants/approvalStatusMap'
+import { approvalStatusTagColor, approvalTypeTagColor } from '../../shared/constants/approvalStatusMap'
 
 const typeFilters: { key: string; label: string }[] = [
   { key: 'all', label: '全部类型' },
@@ -13,18 +13,36 @@ const typeFilters: { key: string; label: string }[] = [
   { key: 'vehicle_use', label: '用车' },
   { key: 'deposit_change', label: '款项变动' },
   { key: 'alarm_handle', label: '告警' },
+  { key: 'wholesale', label: '批售' },
+]
+
+const mainTabs = [
+  { key: 'todo', label: '待我审批' },
+  { key: 'initiated', label: '我发起的' },
+  { key: 'done', label: '已处理' },
 ]
 
 export default function ApprovalList() {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('all')
+  const [mainTab, setMainTab] = useState('todo')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [showTypeFilter, setShowTypeFilter] = useState(false)
 
   const filtered = useMemo(() => {
     return mockApprovals.filter((a) => {
-      if (activeTab !== 'all' && a.status !== activeTab) return false
+      // 主 Tab 过滤
+      if (mainTab === 'todo') {
+        if (a.status !== 'pending' && a.status !== 'approving') return false
+      } else if (mainTab === 'initiated') {
+        // 模拟：我发起的（applicant 包含 张伟）
+        if (!['张伟', '系统'].includes(a.applicant)) return false
+      } else if (mainTab === 'done') {
+        if (a.status !== 'approved' && a.status !== 'rejected') return false
+      }
+      // 状态子过滤
+      if (statusFilter !== 'all' && a.status !== statusFilter) return false
       if (typeFilter !== 'all' && a.type !== typeFilter) return false
       if (search) {
         const s = search.toLowerCase()
@@ -34,7 +52,7 @@ export default function ApprovalList() {
       }
       return true
     })
-  }, [activeTab, typeFilter, search])
+  }, [mainTab, statusFilter, typeFilter, search])
 
   const stats = useMemo(() => ({
     pending: mockApprovals.filter((a) => a.status === 'pending').length,
@@ -42,6 +60,8 @@ export default function ApprovalList() {
     approved: mockApprovals.filter((a) => a.status === 'approved').length,
     rejected: mockApprovals.filter((a) => a.status === 'rejected').length,
   }), [])
+
+  const todoCount = stats.pending + stats.approving
 
   return (
     <div className="page">
@@ -63,16 +83,14 @@ export default function ApprovalList() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
           {[
-            { key: 'pending', label: '待审批', value: stats.pending, color: '#FFD666' },
-            { key: 'approving', label: '审批中', value: stats.approving, color: '#69B4FF' },
-            { key: 'approved', label: '已通过', value: stats.approved, color: '#7DFFB3' },
-            { key: 'rejected', label: '已驳回', value: stats.rejected, color: '#FF6B5A' },
+            { label: '待审批', value: stats.pending, color: '#FFD666' },
+            { label: '审批中', value: stats.approving, color: '#69B4FF' },
+            { label: '已通过', value: stats.approved, color: '#7DFFB3' },
+            { label: '已驳回', value: stats.rejected, color: '#FF6B5A' },
           ].map((item) => (
-            <div key={item.key} onClick={() => setActiveTab(item.key)} style={{
-              background: activeTab === item.key ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)',
-              borderRadius: 10, padding: '10px 8px', textAlign: 'center', cursor: 'pointer',
-              border: activeTab === item.key ? '1px solid rgba(255,255,255,0.2)' : '1px solid transparent',
-              transition: 'all 0.2s',
+            <div key={item.label} style={{
+              background: 'rgba(255,255,255,0.08)',
+              borderRadius: 10, padding: '10px 8px', textAlign: 'center',
             }}>
               <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-num)', color: item.color, letterSpacing: -0.5 }}>
                 {item.value}
@@ -83,23 +101,25 @@ export default function ApprovalList() {
         </div>
       </div>
 
-      {/* Status Tabs */}
-      <div style={{ background: '#fff', display: 'flex', overflowX: 'auto', borderBottom: '1px solid var(--border)' }}>
-        {approvalStatusTabs.map((t) => (
-          <div key={t.key} onClick={() => setActiveTab(t.key)} style={{
-            flex: '0 0 auto', padding: '12px 16px', fontSize: 14, cursor: 'pointer', whiteSpace: 'nowrap',
-            fontWeight: activeTab === t.key ? 700 : 400,
-            color: activeTab === t.key ? 'var(--brand)' : 'var(--text-2)',
-            borderBottom: activeTab === t.key ? '2.5px solid var(--brand)' : '2.5px solid transparent',
+      {/* 主 Tab：待我审批 / 我发起的 / 已处理 */}
+      <div style={{ background: '#fff', display: 'flex', borderBottom: '1px solid var(--border)' }}>
+        {mainTabs.map((t) => (
+          <div key={t.key} onClick={() => { setMainTab(t.key); setStatusFilter('all') }} style={{
+            flex: 1, padding: '13px 0', fontSize: 14, cursor: 'pointer', textAlign: 'center',
+            fontWeight: mainTab === t.key ? 700 : 400,
+            color: mainTab === t.key ? 'var(--brand)' : 'var(--text-2)',
+            borderBottom: mainTab === t.key ? '2.5px solid var(--brand)' : '2.5px solid transparent',
             fontFamily: 'var(--font-display)', transition: 'all 0.2s',
+            position: 'relative',
           }}>
-            {t.title}
-            {t.key === 'pending' && stats.pending > 0 && (
+            {t.label}
+            {t.key === 'todo' && todoCount > 0 && (
               <span style={{
-                marginLeft: 4, fontSize: 10, fontWeight: 700, color: '#fff',
+                position: 'absolute', top: 6, marginLeft: 2,
+                fontSize: 10, fontWeight: 700, color: '#fff',
                 background: 'var(--brand)', borderRadius: 8, padding: '1px 5px',
                 fontFamily: 'var(--font-num)',
-              }}>{stats.pending}</span>
+              }}>{todoCount}</span>
             )}
           </div>
         ))}
@@ -139,7 +159,10 @@ export default function ApprovalList() {
       {/* List */}
       <div style={{ padding: '4px 0 80px' }}>
         {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-2)', fontSize: 14 }}>暂无审批记录</div>
+          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-2)', fontSize: 14 }}>
+            <ShieldCheck size={40} color="var(--text-3)" style={{ marginBottom: 12 }} />
+            <div>暂无审批记录</div>
+          </div>
         ) : filtered.map((item, idx) => {
           const sts = approvalStatusTagColor[item.status] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
           const tts = approvalTypeTagColor[item.type] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
@@ -177,7 +200,7 @@ export default function ApprovalList() {
                   </div>
                 )}
 
-                {/* 审批进度：当前待谁审批 */}
+                {/* 审批进度 */}
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8,
                   padding: '6px 10px', borderRadius: 8,
@@ -269,6 +292,40 @@ export default function ApprovalList() {
                   <ChevronRight size={14} color="var(--text-3)" />
                 </div>
               </div>
+
+              {/* 快捷操作按钮 - 仅待审批状态 */}
+              {(item.status === 'pending' || item.status === 'approving') && mainTab === 'todo' && (
+                <div style={{
+                  padding: '8px 14px 10px', borderTop: '1px solid var(--border)',
+                  display: 'flex', gap: 8,
+                }} onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => navigate(`/approval/detail/${item.id}?action=reject`)} style={{
+                    flex: 1, padding: '8px 0', borderRadius: 8, border: '1px solid var(--red)',
+                    background: 'var(--red-bg)', color: 'var(--red)', fontSize: 13, fontWeight: 600,
+                    fontFamily: 'var(--font-display)', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  }}>
+                    <XCircle size={13} /> 驳回
+                  </button>
+                  <button onClick={() => navigate(`/approval/detail/${item.id}?action=transfer`)} style={{
+                    flex: 1, padding: '8px 0', borderRadius: 8, border: '1px solid var(--blue)',
+                    background: 'var(--blue-bg)', color: 'var(--blue)', fontSize: 13, fontWeight: 600,
+                    fontFamily: 'var(--font-display)', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  }}>
+                    <ArrowRightLeft size={13} /> 转交
+                  </button>
+                  <button onClick={() => navigate(`/approval/detail/${item.id}?action=approve`)} style={{
+                    flex: 1.5, padding: '8px 0', borderRadius: 8, border: 'none',
+                    background: 'var(--brand)', color: '#fff', fontSize: 13, fontWeight: 600,
+                    fontFamily: 'var(--font-display)', cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(232,53,46,0.2)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  }}>
+                    <Send size={13} /> 通过
+                  </button>
+                </div>
+              )}
             </div>
           )
         })}

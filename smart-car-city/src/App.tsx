@@ -48,6 +48,10 @@ import InventoryDetail from './mobile/inventory/InventoryDetail'
 import InventoryListPC from './pc/inventory/InventoryListPC'
 import InventoryDetailPC from './pc/inventory/InventoryDetailPC'
 
+// PC 端 - 清分结算
+import SettlementListPC from './pc/settlement/SettlementListPC'
+import SettlementDetailPC from './pc/settlement/SettlementDetailPC'
+
 export default function App() {
   return (
     <Routes>
@@ -66,6 +70,8 @@ export default function App() {
         <Route path="approval/:id" element={<ApprovalDetailPC />} />
         <Route path="inventory" element={<InventoryListPC />} />
         <Route path="inventory/:id" element={<InventoryDetailPC />} />
+        <Route path="settlement" element={<SettlementListPC />} />
+        <Route path="settlement/:id" element={<SettlementDetailPC />} />
       </Route>
 
       {/* ===== 移动端 ===== */}

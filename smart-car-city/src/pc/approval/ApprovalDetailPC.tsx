@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Tag, Button, Steps, Descriptions, Input, Space, Modal, Timeline, Empty } from 'antd'
+import { Tag, Button, Steps, Descriptions, Input, Space, Modal, Timeline, Empty, Select, message } from 'antd'
 import {
   ArrowLeftOutlined, CheckCircleOutlined, CloseCircleOutlined,
   ClockCircleOutlined, FileTextOutlined,
-  UserOutlined, BankOutlined, CarOutlined,
+  UserOutlined, BankOutlined, CarOutlined, SwapOutlined,
 } from '@ant-design/icons'
 import { mockApprovals } from '../../shared/mock/approvalMock'
 import { approvalTypeText } from '../../shared/constants/approvalStatusMap'
@@ -12,16 +12,10 @@ import { approvalTypeText } from '../../shared/constants/approvalStatusMap'
 const { TextArea } = Input
 
 const statusColorMap: Record<string, string> = {
-  pending: 'warning',
-  approving: 'processing',
-  approved: 'success',
-  rejected: 'error',
+  pending: 'warning', approving: 'processing', approved: 'success', rejected: 'error',
 }
 const statusTextMap: Record<string, string> = {
-  pending: '待审批',
-  approving: '审批中',
-  approved: '已通过',
-  rejected: '已驳回',
+  pending: '待审批', approving: '审批中', approved: '已通过', rejected: '已驳回',
 }
 const typeColorMap: Record<string, string> = {
   purchase: 'blue', advance: 'orange', listing: 'purple',
@@ -29,13 +23,23 @@ const typeColorMap: Record<string, string> = {
   deposit_change: 'red', alarm_handle: 'volcano', wholesale: 'default',
 }
 
+const transferCandidates = [
+  { id: 'u1', name: '陈经理', role: '经销公司管理员', company: '广州天河旗舰店' },
+  { id: 'u2', name: '王总', role: '经销公司管理员', company: '深圳福田精品店' },
+  { id: 'u3', name: '刘主管', role: '平台审批员', company: '平台' },
+  { id: 'u4', name: '赵财务', role: '财务主管', company: '广州天河旗舰店' },
+]
+
 export default function ApprovalDetailPC() {
   const { id } = useParams()
   const navigate = useNavigate()
   const record = mockApprovals.find((r) => r.id === id)
   const [approveModal, setApproveModal] = useState(false)
   const [rejectModal, setRejectModal] = useState(false)
+  const [transferModal, setTransferModal] = useState(false)
   const [opinion, setOpinion] = useState('')
+  const [transferTo, setTransferTo] = useState<string | undefined>(undefined)
+  const [transferReason, setTransferReason] = useState('')
 
   if (!record) {
     return (
@@ -70,6 +74,7 @@ export default function ApprovalDetailPC() {
         {isPending && (
           <Space>
             <Button size="large" danger onClick={() => setRejectModal(true)}>驳回</Button>
+            <Button size="large" icon={<SwapOutlined />} onClick={() => setTransferModal(true)}>转交</Button>
             <Button size="large" type="primary" onClick={() => setApproveModal(true)}
               style={{ background: '#52c41a', borderColor: '#52c41a' }}>通过</Button>
           </Space>
@@ -190,7 +195,7 @@ export default function ApprovalDetailPC() {
 
       {/* 通过弹窗 */}
       <Modal title="审批通过" open={approveModal} onCancel={() => { setApproveModal(false); setOpinion('') }}
-        onOk={() => { alert(`通过: ${record.id}, 意见: ${opinion}`); setApproveModal(false); setOpinion('') }}
+        onOk={() => { message.success(`已通过: ${record.id}`); setApproveModal(false); setOpinion('') }}
         okText="确认通过" okButtonProps={{ style: { background: '#52c41a', borderColor: '#52c41a' } }}>
         <div style={{ marginBottom: 8, fontSize: 13, color: '#8c8c8c' }}>审批单: {record.id}</div>
         <TextArea rows={3} placeholder="请输入审批意见（选填）" value={opinion} onChange={(e) => setOpinion(e.target.value)} />
@@ -198,12 +203,49 @@ export default function ApprovalDetailPC() {
 
       {/* 驳回弹窗 */}
       <Modal title="审批驳回" open={rejectModal} onCancel={() => { setRejectModal(false); setOpinion('') }}
-        onOk={() => { alert(`驳回: ${record.id}, 意见: ${opinion}`); setRejectModal(false); setOpinion('') }}
+        onOk={() => { message.error(`已驳回: ${record.id}`); setRejectModal(false); setOpinion('') }}
         okText="确认驳回" okButtonProps={{ danger: true }}>
         <div style={{ marginBottom: 8, fontSize: 13, color: '#8c8c8c' }}>审批单: {record.id}</div>
         <TextArea rows={3} placeholder="请输入驳回原因（必填）" value={opinion} onChange={(e) => setOpinion(e.target.value)} />
       </Modal>
 
+      {/* 转交弹窗 */}
+      <Modal
+        title={<span><SwapOutlined style={{ marginRight: 8 }} />转交审批</span>}
+        open={transferModal}
+        onCancel={() => { setTransferModal(false); setTransferTo(undefined); setTransferReason('') }}
+        onOk={() => {
+          const target = transferCandidates.find((c) => c.id === transferTo)
+          message.success(`已将审批转交给 ${target?.name}`)
+          setTransferModal(false)
+          setTransferTo(undefined)
+          setTransferReason('')
+        }}
+        okText="确认转交"
+        okButtonProps={{ disabled: !transferTo }}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 4 }}>审批单: {record.id}</div>
+          <div style={{ fontSize: 13, color: '#1a1a2e' }}>{record.summary}</div>
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 6 }}>选择转交人</div>
+          <Select
+            placeholder="请选择转交人"
+            value={transferTo}
+            onChange={setTransferTo}
+            style={{ width: '100%' }}
+            options={transferCandidates.map((c) => ({
+              value: c.id,
+              label: `${c.name}（${c.role}）- ${c.company}`,
+            }))}
+          />
+        </div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 6 }}>转交说明</div>
+          <TextArea rows={3} placeholder="请输入转交说明（选填）" value={transferReason} onChange={(e) => setTransferReason(e.target.value)} />
+        </div>
+      </Modal>
     </div>
   )
 }

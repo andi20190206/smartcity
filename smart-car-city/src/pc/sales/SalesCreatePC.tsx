@@ -406,31 +406,34 @@ export default function SalesCreatePC() {
                   <>
                     <Row gutter={24}>
                       <Col span={8}>
-                        <Form.Item label="收款方式" name="indivPayMode">
-                          <Select defaultValue="法人个人卡" options={[{ value: '法人个人卡', label: '法人个人卡' }, { value: '对公账户', label: '对公账户' }]} />
+                        <Form.Item label="银行卡类型" name="indivPayMode" initialValue="法人名下银行卡" rules={[{ required: true }]}>
+                          <Select options={[{ value: '法人名下银行卡', label: '法人名下银行卡' }, { value: '对公账户银行卡', label: '对公账户银行卡' }]} />
                         </Form.Item>
                       </Col>
                       <Col span={8}>
-                        <Form.Item label="开户名"><Input value="自动带入法人姓名/企业名称" disabled /></Form.Item>
-                      </Col>
-                      <Col span={8}>
-                        <Form.Item label="银行卡号/对公账号" name="payerCardNo" rules={[{ required: true }]}>
-                          <Input placeholder="请输入卡号" />
+                        <Form.Item label="账户类型" name="indivAccountType" initialValue="他行" rules={[{ required: true }]}>
+                          <Select options={[{ value: '他行', label: '他行个人/企业账户' }, { value: '中信', label: '中信个人/企业账户' }]} />
                         </Form.Item>
                       </Col>
                       <Col span={8}>
-                        <Form.Item label="所属银行" name="payerBank" rules={[{ required: true }]}>
-                          <Input placeholder="请输入所属银行" />
+                        <Form.Item label="开户名"><Input value="自动带入法人姓名/企业名称" disabled style={{ color: '#bfbfbf' }} /></Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item label="银行卡号" name="payerCardNo" rules={[{ required: true }]}>
+                          <Input placeholder="请输入银行卡号" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item label="银行名称" name="payerBank" rules={[{ required: true }]}>
+                          <Input placeholder="请选择银行" />
                         </Form.Item>
                       </Col>
                       <Col span={8}>
                         <Form.Item label="银行预留手机" name="payerPhone">
-                          <Input placeholder="法人个人卡时必填" />
+                          <Input placeholder="法人名下银行卡时必填" />
                         </Form.Item>
                       </Col>
                     </Row>
-                    <Alert type="info" showIcon icon={<InfoCircleOutlined />}
-                      message="选择对公账户时，系统会自动转入0.01元用于验证账号有效性" style={{ marginTop: 8 }} />
                   </>
                 )}
               </>

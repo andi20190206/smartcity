@@ -213,7 +213,7 @@ export default function PurchaseCreate() {
   // 个体工商户收款方式
   const [indivPayMode, setIndivPayMode] = useState<string>('法人名下银行卡')
   // 个体工商户账户类型
-  const [indivAccountType, setIndivAccountType] = useState<string>('中信')
+  const [indivAccountType, setIndivAccountType] = useState<string>('他行')
   // 企业证件类型
   const [enterpriseCertType, setEnterpriseCertType] = useState<string>('统一社会信用代码')
   const [showCertPicker, setShowCertPicker] = useState(false)

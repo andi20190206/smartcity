@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, Tag, Input, Select, Button, Space, Badge, Popover } from 'antd'
+import { Table, Tag, Input, Select, Button, Space, Badge, Popover, Modal, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import {
   SearchOutlined, ReloadOutlined, ExportOutlined,
-  AuditOutlined, UserOutlined,
+  AuditOutlined, UserOutlined, SwapOutlined, SettingOutlined,
 } from '@ant-design/icons'
 import { mockApprovals } from '../../shared/mock/approvalMock'
 import { approvalTypeText } from '../../shared/constants/approvalStatusMap'
@@ -34,17 +34,24 @@ const typeColorMap: Record<string, string> = {
   wholesale: 'default',
 }
 
-type TabKey = 'all' | ApprovalStatus
+const transferCandidates = [
+  { id: 'u1', name: '陈经理', role: '经销公司管理员', company: '广州天河旗舰店' },
+  { id: 'u2', name: '王总', role: '经销公司管理员', company: '深圳福田精品店' },
+  { id: 'u3', name: '刘主管', role: '平台审批员', company: '平台' },
+  { id: 'u4', name: '赵财务', role: '财务主管', company: '广州天河旗舰店' },
+]
+
+type TabKey = 'all' | 'todo' | 'initiated' | ApprovalStatus
 
 const tabItems: { key: TabKey; label: string }[] = [
-  { key: 'all', label: '审批列表' },
-  { key: 'pending', label: '待审批' },
-  { key: 'approving', label: '审批中' },
+  { key: 'all', label: '全部审批' },
+  { key: 'todo', label: '待我审批' },
+  { key: 'initiated', label: '我发起的' },
   { key: 'approved', label: '已通过' },
   { key: 'rejected', label: '已驳回' },
 ]
 
-/** 审批进度：显示当前待谁审批，hover 展示全部审批人 */
+/** 审批进度 Popover */
 function ApprovalProgress({ record }: { record: ApprovalRecord }) {
   const pendingNode = record.nodes.find((n) => n.status === 'pending')
   const isFinished = record.status === 'approved' || record.status === 'rejected'
@@ -123,10 +130,21 @@ export default function ApprovalListPC() {
   const [activeTab, setActiveTab] = useState<TabKey>('all')
   const [searchText, setSearchText] = useState('')
   const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined)
+  const [transferModal, setTransferModal] = useState<{ open: boolean; record: ApprovalRecord | null }>({ open: false, record: null })
+  const [transferTo, setTransferTo] = useState<string | undefined>(undefined)
+  const [transferReason, setTransferReason] = useState('')
 
   const filteredData = useMemo(() => {
     return mockApprovals.filter((a) => {
-      if (activeTab !== 'all' && a.status !== activeTab) return false
+      if (activeTab === 'todo') {
+        if (a.status !== 'pending' && a.status !== 'approving') return false
+      } else if (activeTab === 'initiated') {
+        if (!['张伟', '系统'].includes(a.applicant)) return false
+      } else if (activeTab === 'approved') {
+        if (a.status !== 'approved') return false
+      } else if (activeTab === 'rejected') {
+        if (a.status !== 'rejected') return false
+      }
       if (typeFilter && a.type !== typeFilter) return false
       if (searchText) {
         const s = searchText.toLowerCase()
@@ -145,6 +163,17 @@ export default function ApprovalListPC() {
     approved: mockApprovals.filter((a) => a.status === 'approved').length,
     rejected: mockApprovals.filter((a) => a.status === 'rejected').length,
   }), [])
+
+  const todoCount = stats.pending + stats.approving
+
+  const handleTransfer = () => {
+    if (!transferTo || !transferModal.record) return
+    const target = transferCandidates.find((c) => c.id === transferTo)
+    message.success(`已将 ${transferModal.record.id} 转交给 ${target?.name}`)
+    setTransferModal({ open: false, record: null })
+    setTransferTo(undefined)
+    setTransferReason('')
+  }
 
   const columns: ColumnsType<ApprovalRecord> = [
     {
@@ -243,7 +272,7 @@ export default function ApprovalListPC() {
     {
       title: '操作',
       key: 'action',
-      width: 180,
+      width: 220,
       fixed: 'right',
       render: (_: unknown, record: ApprovalRecord) => {
         const canApprove = record.status === 'pending' || record.status === 'approving'
@@ -254,13 +283,16 @@ export default function ApprovalListPC() {
               <Button size="small" onClick={() => navigate(`/pc/approval/${record.id}`)}>查看</Button>
               {canApprove && (
                 <>
-                  <Button size="small" type="primary" style={{ background: '#52c41a', borderColor: '#52c41a' }} onClick={() => alert(`通过: ${record.id}`)}>通过</Button>
-                  <Button size="small" danger onClick={() => alert(`驳回: ${record.id}`)}>驳回</Button>
+                  <Button size="small" type="primary" style={{ background: '#52c41a', borderColor: '#52c41a' }}
+                    onClick={() => message.success(`已通过: ${record.id}`)}>通过</Button>
+                  <Button size="small" danger onClick={() => message.error(`已驳回: ${record.id}`)}>驳回</Button>
+                  <Button size="small" icon={<SwapOutlined />}
+                    onClick={() => setTransferModal({ open: true, record })}>转交</Button>
                 </>
               )}
             </Space>
             {record.status === 'rejected' && rejectNode?.opinion && (
-              <div style={{ marginTop: 4, fontSize: 11, color: '#ff4d4f', lineHeight: 1.3, maxWidth: 170, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              <div style={{ marginTop: 4, fontSize: 11, color: '#ff4d4f', lineHeight: 1.3, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                 title={rejectNode.opinion}>
                 驳回: {rejectNode.opinion}
               </div>
@@ -273,14 +305,14 @@ export default function ApprovalListPC() {
 
   return (
     <div>
-      {/* 统计卡片 — 可点击切换 Tab */}
+      {/* 统计卡片 */}
       <div className="stat-row" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
         {[
           { key: 'all' as TabKey, cls: 'brand', label: '审批总数', value: stats.total, sub: '全部审批单' },
-          { key: 'pending' as TabKey, cls: 'orange', label: '待审批', value: stats.pending, sub: '需要处理' },
-          { key: 'approving' as TabKey, cls: 'blue', label: '审批中', value: stats.approving, sub: '流转中' },
+          { key: 'todo' as TabKey, cls: 'orange', label: '待我审批', value: todoCount, sub: '需要处理' },
           { key: 'approved' as TabKey, cls: 'green', label: '已通过', value: stats.approved, sub: '审批完成' },
           { key: 'rejected' as TabKey, cls: '', label: '已驳回', value: stats.rejected, sub: '审批未通过' },
+          { key: 'initiated' as TabKey, cls: 'blue', label: '我发起的', value: mockApprovals.filter((a) => ['张伟', '系统'].includes(a.applicant)).length, sub: '我提交的审批' },
         ].map((card) => (
           <div key={card.key}
             className={`stat-card ${card.cls}`}
@@ -294,7 +326,7 @@ export default function ApprovalListPC() {
             {card.key === 'rejected' && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#ff4d4f' }} />}
             <div className="stat-label">{card.label}</div>
             <div className="stat-value" style={{ color: card.key === 'rejected' ? '#ff4d4f' : undefined }}>
-              {card.key === 'pending' && card.value > 0
+              {card.key === 'todo' && card.value > 0
                 ? <Badge count={card.value} offset={[10, 0]} size="small">{card.value}</Badge>
                 : card.value}
             </div>
@@ -303,36 +335,36 @@ export default function ApprovalListPC() {
         ))}
       </div>
 
-      {/* Tab 栏 */}
+      {/* Tab + Table */}
       <div className="table-card">
         <div style={{
           display: 'flex', borderBottom: '1px solid #f5f5f5',
-          padding: '0 20px', gap: 0,
+          padding: '0 20px', gap: 0, justifyContent: 'space-between', alignItems: 'center',
         }}>
-          {tabItems.map((tab) => (
-            <div key={tab.key} onClick={() => setActiveTab(tab.key)}
-              style={{
-                padding: '12px 18px', fontSize: 14, cursor: 'pointer',
-                fontWeight: activeTab === tab.key ? 600 : 400,
-                color: activeTab === tab.key ? '#E8352E' : '#8c8c8c',
-                borderBottom: activeTab === tab.key ? '2px solid #E8352E' : '2px solid transparent',
-                transition: 'all 0.15s',
-                display: 'flex', alignItems: 'center', gap: 6,
-              }}>
-              {tab.label}
-              {tab.key === 'pending' && stats.pending > 0 && (
-                <span style={{
-                  fontSize: 11, fontWeight: 700, color: '#fff', background: '#E8352E',
-                  borderRadius: 8, padding: '0 6px', lineHeight: '18px', minWidth: 18, textAlign: 'center',
-                }}>{stats.pending}</span>
-              )}
-              {tab.key !== 'all' && tab.key !== 'pending' && (
-                <span style={{ fontSize: 11, color: '#bfbfbf' }}>
-                  {stats[tab.key as keyof typeof stats]}
-                </span>
-              )}
-            </div>
-          ))}
+          <div style={{ display: 'flex' }}>
+            {tabItems.map((tab) => (
+              <div key={tab.key} onClick={() => setActiveTab(tab.key)}
+                style={{
+                  padding: '12px 18px', fontSize: 14, cursor: 'pointer',
+                  fontWeight: activeTab === tab.key ? 600 : 400,
+                  color: activeTab === tab.key ? '#E8352E' : '#8c8c8c',
+                  borderBottom: activeTab === tab.key ? '2px solid #E8352E' : '2px solid transparent',
+                  transition: 'all 0.15s',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}>
+                {tab.label}
+                {tab.key === 'todo' && todoCount > 0 && (
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, color: '#fff', background: '#E8352E',
+                    borderRadius: 8, padding: '0 6px', lineHeight: '18px', minWidth: 18, textAlign: 'center',
+                  }}>{todoCount}</span>
+                )}
+              </div>
+            ))}
+          </div>
+          <Button icon={<SettingOutlined />} onClick={() => navigate('/pc/approval/config')}>
+            审批流配置
+          </Button>
         </div>
 
         <div className="table-card-header" style={{ borderBottom: 'none' }}>
@@ -372,7 +404,7 @@ export default function ApprovalListPC() {
             dataSource={filteredData}
             rowKey="id"
             size="middle"
-            scroll={{ x: 1400 }}
+            scroll={{ x: 1500 }}
             pagination={{
               pageSize: 10,
               showSizeChanger: true,
@@ -387,7 +419,44 @@ export default function ApprovalListPC() {
         </div>
       </div>
 
-
+      {/* 转交弹窗 */}
+      <Modal
+        title={<span><SwapOutlined style={{ marginRight: 8 }} />转交审批</span>}
+        open={transferModal.open}
+        onCancel={() => { setTransferModal({ open: false, record: null }); setTransferTo(undefined); setTransferReason('') }}
+        onOk={handleTransfer}
+        okText="确认转交"
+        okButtonProps={{ disabled: !transferTo }}
+      >
+        {transferModal.record && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 4 }}>审批单: {transferModal.record.id}</div>
+            <div style={{ fontSize: 13, color: '#1a1a2e' }}>{transferModal.record.summary}</div>
+          </div>
+        )}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 6 }}>选择转交人</div>
+          <Select
+            placeholder="请选择转交人"
+            value={transferTo}
+            onChange={setTransferTo}
+            style={{ width: '100%' }}
+            options={transferCandidates.map((c) => ({
+              value: c.id,
+              label: `${c.name}（${c.role}）- ${c.company}`,
+            }))}
+          />
+        </div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 6 }}>转交说明</div>
+          <Input.TextArea
+            rows={3}
+            placeholder="请输入转交说明（选填）"
+            value={transferReason}
+            onChange={(e) => setTransferReason(e.target.value)}
+          />
+        </div>
+      </Modal>
     </div>
   )
 }

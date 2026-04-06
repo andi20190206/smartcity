@@ -248,21 +248,33 @@ export default function SalesCreate() {
             {buyerType === '个体工商户' && (
               <>
                 <div className="weui-cell">
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人证件类型</label></div>
+                  <div className="weui-cell__bd" style={{ fontSize: 14, color: 'var(--text-3)' }}>身份证</div>
+                </div>
+                <div className="weui-cell">
                   <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人姓名</label></div>
                   <div className="weui-cell__bd">
                     <input className="weui-input" placeholder="请输入法人姓名" value={buyerData.name} onChange={(e) => setBuyerData({ ...buyerData, name: e.target.value })} style={{ fontSize: 14 }} />
                   </div>
                 </div>
                 <div className="weui-cell">
-                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人证件类型</label></div>
-                  <div className="weui-cell__bd" style={{ fontSize: 14 }}>身份证 / 统一社会信用代码</div>
-                  <div className="weui-cell__ft"><ChevronDown size={16} color="var(--text-3)" /></div>
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人身份证号码</label></div>
+                  <div className="weui-cell__bd">
+                    <input className="weui-input" placeholder="请输入法人身份证号码" value={buyerData.idNo} onChange={(e) => setBuyerData({ ...buyerData, idNo: e.target.value })} style={{ fontSize: 14 }} />
+                  </div>
                 </div>
                 <div className="weui-cell">
-                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人证件号码</label></div>
-                  <div className="weui-cell__bd">
-                    <input className="weui-input" placeholder="请输入法人证件号码" value={buyerData.idNo} onChange={(e) => setBuyerData({ ...buyerData, idNo: e.target.value })} style={{ fontSize: 14 }} />
-                  </div>
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>企业证件类型</label></div>
+                  <div className="weui-cell__bd" style={{ fontSize: 14 }}>{enterpriseCertType}</div>
+                  <div className="weui-cell__ft" onClick={() => setEnterpriseCertType(enterpriseCertType === '统一社会信用代码' ? '组织机构代码' : '统一社会信用代码')}><ChevronDown size={16} color="var(--text-3)" /></div>
+                </div>
+                <div className="weui-cell">
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>企业名称</label></div>
+                  <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入企业名称" style={{ fontSize: 14 }} /></div>
+                </div>
+                <div className="weui-cell">
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>企业证件号码</label></div>
+                  <div className="weui-cell__bd"><input className="weui-input" placeholder={`请输入${enterpriseCertType}`} style={{ fontSize: 14 }} /></div>
                 </div>
               </>
             )}
@@ -277,7 +289,7 @@ export default function SalesCreate() {
           {/* 买家证件上传 */}
           <div className="section-hd">买家证件（支持OCR识别）</div>
           <div style={{ padding: '0 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-            {(buyerType === '企业' ? ['营业执照'] : buyerType === '个体工商户' ? ['法人身份证正面', '法人身份证反面', '营业执照'] : ['身份证正面', '身份证反面']).map((label) => (
+            {(buyerType === '企业' ? ['营业执照'] : buyerType === '个体工商户' ? ['法人身份证人像页', '法人身份证国徽页', '营业执照/组织机构代码证'] : ['身份证正面', '身份证反面']).map((label) => (
               <div key={label} className="upload-area" style={{ aspectRatio: '3/2', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 <Camera size={24} color="var(--text-3)" />
                 <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{label}</span>
@@ -460,17 +472,29 @@ export default function SalesCreate() {
                 {thirdPayerType === '个体工商户' && (
                   <>
                     <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人证件类型</label></div>
+                      <div className="weui-cell__bd" style={{ fontSize: 14, color: 'var(--text-3)' }}>身份证</div>
+                    </div>
+                    <div className="weui-cell">
                       <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人姓名</label></div>
                       <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入法人姓名" value={payerData.name} onChange={(e) => setPayerData({ ...payerData, name: e.target.value })} style={{ fontSize: 14 }} /></div>
                     </div>
                     <div className="weui-cell">
-                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人证件类型</label></div>
-                      <div className="weui-cell__bd" style={{ fontSize: 14 }}>身份证 / 统一社会信用代码</div>
-                      <div className="weui-cell__ft"><ChevronDown size={16} color="var(--text-3)" /></div>
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人身份证号码</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入法人身份证号码" value={payerData.idNo} onChange={(e) => setPayerData({ ...payerData, idNo: e.target.value })} style={{ fontSize: 14 }} /></div>
                     </div>
                     <div className="weui-cell">
-                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>法人证件号码</label></div>
-                      <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入法人证件号码" value={payerData.idNo} onChange={(e) => setPayerData({ ...payerData, idNo: e.target.value })} style={{ fontSize: 14 }} /></div>
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>企业证件类型</label></div>
+                      <div className="weui-cell__bd" style={{ fontSize: 14 }}>{thirdPayerEntCert}</div>
+                      <div className="weui-cell__ft" onClick={() => setThirdPayerEntCert(thirdPayerEntCert === '统一社会信用代码' ? '组织机构代码' : '统一社会信用代码')}><ChevronDown size={16} color="var(--text-3)" /></div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>企业名称</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入企业名称" style={{ fontSize: 14 }} /></div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>企业证件号码</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder={`请输入${thirdPayerEntCert}`} style={{ fontSize: 14 }} /></div>
                     </div>
                   </>
                 )}
@@ -522,7 +546,7 @@ export default function SalesCreate() {
 
               <div className="section-hd">付款人证件（支持OCR）</div>
               <div style={{ padding: '0 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-                {(thirdPayerType === '企业' ? ['营业执照'] : thirdPayerType === '个体工商户' ? ['法人身份证正面', '法人身份证反面', '营业执照'] : ['身份证正面', '身份证反面']).map((label) => (
+                {(thirdPayerType === '企业' ? ['营业执照'] : thirdPayerType === '个体工商户' ? ['法人身份证人像页', '法人身份证国徽页', '营业执照/组织机构代码证'] : ['身份证正面', '身份证反面']).map((label) => (
                   <div key={label} className="upload-area" style={{ aspectRatio: '3/2', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                     <Camera size={24} color="var(--text-3)" />
                     <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{label}</span>

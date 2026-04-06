@@ -639,17 +639,29 @@ export default function PurchaseCreate() {
             {ownerTypeState === '个体工商户' && (
               <>
                 <div className="weui-cell">
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>法人证件类型</label></div>
+                  <div className="weui-cell__bd" style={{ fontSize: 14, color: 'var(--text-3)' }}>身份证</div>
+                </div>
+                <div className="weui-cell">
                   <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>法人姓名</label></div>
                   <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入法人姓名" style={{ fontSize: 14 }} /></div>
                 </div>
                 <div className="weui-cell">
-                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>法人证件类型</label></div>
-                  <div className="weui-cell__bd" style={{ fontSize: 14 }}>身份证 / 统一社会信用代码</div>
-                  <div className="weui-cell__ft"><ChevronDown size={16} color="var(--text-3)" /></div>
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>法人身份证号码</label></div>
+                  <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入法人身份证号码" style={{ fontSize: 14 }} /></div>
                 </div>
                 <div className="weui-cell">
-                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>法人证件号码</label></div>
-                  <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入法人证件号码" style={{ fontSize: 14 }} /></div>
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>企业证件类型</label></div>
+                  <div className="weui-cell__bd" style={{ fontSize: 14 }}>{enterpriseCertType}</div>
+                  <div className="weui-cell__ft" onClick={() => setEnterpriseCertType(enterpriseCertType === '统一社会信用代码' ? '组织机构代码' : '统一社会信用代码')}><ChevronDown size={16} color="var(--text-3)" /></div>
+                </div>
+                <div className="weui-cell">
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>企业名称</label></div>
+                  <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入企业名称" style={{ fontSize: 14 }} /></div>
+                </div>
+                <div className="weui-cell">
+                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>企业证件号码</label></div>
+                  <div className="weui-cell__bd"><input className="weui-input" placeholder={`请输入${enterpriseCertType}`} style={{ fontSize: 14 }} /></div>
                 </div>
               </>
             )}
@@ -661,7 +673,7 @@ export default function PurchaseCreate() {
 
           <div className="section-hd">证件照片（支持OCR自动识别）</div>
           <div style={{ padding: '0 16px 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-            {(ownerTypeState === '企业' ? ['营业执照'] : ownerTypeState === '个体工商户' ? ['法人身份证正面', '法人身份证反面', '营业执照'] : ['身份证正面', '身份证反面']).map((label) => (
+            {(ownerTypeState === '企业' ? ['营业执照'] : ownerTypeState === '个体工商户' ? ['法人身份证人像页', '法人身份证国徽页', '营业执照/组织机构代码证'] : ['身份证正面', '身份证反面']).map((label) => (
               <div key={label} className="upload-area" style={{ padding: ownerIdPhotos[label] ? 0 : 16, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, overflow: 'hidden' }}>
                 {ownerIdPhotos[label] ? (
                   <img src={ownerIdPhotos[label]} alt={label} style={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 10 }} />

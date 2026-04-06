@@ -271,18 +271,31 @@ export default function SalesCreatePC() {
               {buyerType === '个体工商户' && (
                 <>
                   <Col span={8}>
-                    <Form.Item label="法人姓名" name="buyerName" rules={[{ required: true }]}>
+                    <Form.Item label="法人证件类型"><Input value="身份证" disabled style={{ color: '#bfbfbf' }} /></Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="法人姓名" name="buyerLegalName" rules={[{ required: true }]}>
                       <Input placeholder="请输入法人姓名" />
                     </Form.Item>
                   </Col>
                   <Col span={8}>
-                    <Form.Item label="法人证件类型" name="buyerCertType">
-                      <Select options={[{ value: '身份证', label: '身份证' }, { value: '统一社会信用代码', label: '统一社会信用代码/组织机构代码' }]} placeholder="请选择" />
+                    <Form.Item label="法人身份证号码" name="buyerIdNo" rules={[{ required: true }]}>
+                      <Input placeholder="请输入法人身份证号码" />
                     </Form.Item>
                   </Col>
                   <Col span={8}>
-                    <Form.Item label="法人证件号码" name="buyerIdNo" rules={[{ required: true }]}>
-                      <Input placeholder="请输入法人证件号码" />
+                    <Form.Item label="企业证件类型" name="buyerEntCertType" initialValue="统一社会信用代码">
+                      <Select options={[{ value: '统一社会信用代码', label: '统一社会信用代码' }, { value: '组织机构代码', label: '组织机构代码' }]} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="企业名称" name="buyerName" rules={[{ required: true }]}>
+                      <Input placeholder="请输入企业名称" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="企业证件号码" name="buyerEntIdNo" rules={[{ required: true }]}>
+                      <Input placeholder="请输入企业证件号码" />
                     </Form.Item>
                   </Col>
                 </>
@@ -303,13 +316,13 @@ export default function SalesCreatePC() {
                 ) : buyerType === '个体工商户' ? (
                   <>
                     <Upload listType="picture-card" maxCount={1} accept="image/*" beforeUpload={() => false}>
-                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>法人身份证正面</div></div>
+                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>法人身份证人像页</div></div>
                     </Upload>
                     <Upload listType="picture-card" maxCount={1} accept="image/*" beforeUpload={() => false}>
-                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>法人身份证反面</div></div>
+                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>法人身份证国徽页</div></div>
                     </Upload>
                     <Upload listType="picture-card" maxCount={1} accept="image/*" beforeUpload={() => false}>
-                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>营业执照</div></div>
+                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>营业执照/组织机构代码证</div></div>
                     </Upload>
                   </>
                 ) : (

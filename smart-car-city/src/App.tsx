@@ -37,6 +37,7 @@ import SalesDetail from './mobile/sales/SalesDetail'
 
 // PC 端 - 销售管理
 import SalesListPC from './pc/sales/SalesListPC'
+import SalesCreatePC from './pc/sales/SalesCreatePC'
 import SalesDetailPC from './pc/sales/SalesDetailPC'
 
 // 移动端 - 库存监管
@@ -59,6 +60,7 @@ export default function App() {
         <Route path="fund" element={<FundListPC />} />
         <Route path="fund/advance/:id" element={<AdvanceDetailPC />} />
         <Route path="sales" element={<SalesListPC />} />
+        <Route path="sales/create" element={<SalesCreatePC />} />
         <Route path="sales/:id" element={<SalesDetailPC />} />
         <Route path="approval" element={<ApprovalListPC />} />
         <Route path="approval/:id" element={<ApprovalDetailPC />} />

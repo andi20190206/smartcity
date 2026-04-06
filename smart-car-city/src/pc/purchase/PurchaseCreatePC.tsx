@@ -65,6 +65,8 @@ export default function PurchaseCreatePC() {
   // 卖方信息状态
   const [ownerType, setOwnerType] = useState<string>('个人')
   const [licenseOcrStatus, setLicenseOcrStatus] = useState<'idle' | 'scanning' | 'done'>('idle')
+  const [idOcrStatus, setIdOcrStatus] = useState<'idle' | 'scanning' | 'done'>('idle')
+  const [idOcrFields, setIdOcrFields] = useState<string[]>([])
   // 委托人状态
   const [delegateIdentity, setDelegateIdentity] = useState<string>('车主本人')
   const [delegateOcrStatus, setDelegateOcrStatus] = useState<'idle' | 'scanning' | 'done'>('idle')
@@ -81,6 +83,25 @@ export default function PurchaseCreatePC() {
       })
       setLicenseOcrStatus('done')
       message.success('营业执照识别完成，已回填企业名称和证件号码')
+    }, 1500)
+    return false
+  }
+
+  /** 模拟身份证/营业执照OCR识别（个人/企业） */
+  const handleIdOcr = (file: File) => {
+    setIdOcrStatus('scanning')
+    setIdOcrFields([])
+    setTimeout(() => {
+      if (ownerType === '个人') {
+        ownerForm.setFieldsValue({ ownerName: '张三', ownerIdNo: '440106199001011234' })
+        setIdOcrFields(['ownerName', 'ownerIdNo'])
+        message.success('身份证识别完成，已回填姓名和身份证号')
+      } else {
+        ownerForm.setFieldsValue({ ownerName: '广州XX汽车经销有限公司', ownerIdNo: '91440106MA7DXLR8XY' })
+        setIdOcrFields(['ownerName', 'ownerIdNo'])
+        message.success('营业执照识别完成，已回填企业名称和信用代码')
+      }
+      setIdOcrStatus('done')
     }, 1500)
     return false
   }
@@ -328,15 +349,15 @@ export default function PurchaseCreatePC() {
               <Col span={8}>
                 <Form.Item label={ownerType === '个人' ? '姓名' : '企业名称'} name="ownerName" rules={[{ required: true }]}>
                   <Input placeholder={ownerType === '个人' ? '请输入车主姓名' : '请输入企业名称'}
-                    style={licenseOcrStatus === 'done' && ownerType === '个体工商户' ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
-                    suffix={licenseOcrStatus === 'done' && ownerType === '个体工商户' ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
+                    style={(licenseOcrStatus === 'done' && ownerType === '个体工商户') || idOcrFields.includes('ownerName') ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
+                    suffix={(licenseOcrStatus === 'done' && ownerType === '个体工商户') || idOcrFields.includes('ownerName') ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
                 </Form.Item>
               </Col>
               <Col span={8}>
                 <Form.Item label="证件号码" name="ownerIdNo" rules={[{ required: true }]}>
                   <Input placeholder={ownerType === '个人' ? '身份证号' : '统一社会信用代码'}
-                    style={licenseOcrStatus === 'done' && ownerType === '个体工商户' ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
-                    suffix={licenseOcrStatus === 'done' && ownerType === '个体工商户' ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
+                    style={(licenseOcrStatus === 'done' && ownerType === '个体工商户') || idOcrFields.includes('ownerIdNo') ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
+                    suffix={(licenseOcrStatus === 'done' && ownerType === '个体工商户') || idOcrFields.includes('ownerIdNo') ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
                 </Form.Item>
               </Col>
               <Col span={8}>
@@ -380,24 +401,53 @@ export default function PurchaseCreatePC() {
               </div>
             )}
 
-            {/* 个人/企业：身份证或营业执照 */}
-            <Form.Item label={ownerType === '个人' ? '车主证件照片' : ownerType === '企业' ? '营业执照' : undefined}
-              style={ownerType === '个体工商户' ? { display: 'none' } : undefined}>
-              {ownerType === '个人' ? (
-                <Space size={16}>
-                  <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
-                    <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>身份证正面</div></div>
-                  </Upload>
-                  <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
-                    <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>身份证反面</div></div>
-                  </Upload>
+            {/* 个人/企业：证件OCR识别 */}
+            {ownerType !== '个体工商户' && (
+              <div style={{
+                marginBottom: 16, padding: 16, borderRadius: 8,
+                background: idOcrStatus === 'done' ? '#f6ffed' : '#fafafa',
+                border: `1px solid ${idOcrStatus === 'done' ? '#b7eb8f' : '#f0f0f0'}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                  <ScanOutlined style={{ color: idOcrStatus === 'done' ? '#52c41a' : '#E8352E' }} />
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>
+                    {idOcrStatus === 'idle' && (ownerType === '个人' ? '上传身份证，OCR自动识别' : '上传营业执照，OCR自动识别')}
+                    {idOcrStatus === 'scanning' && '正在识别中...'}
+                    {idOcrStatus === 'done' && (ownerType === '个人' ? '身份证识别完成' : '营业执照识别完成')}
+                  </span>
+                  {idOcrStatus === 'scanning' && <LoadingOutlined spin style={{ color: '#fa8c16' }} />}
+                  {idOcrStatus === 'done' && <Tag color="success" icon={<CheckCircleOutlined />}>已回填 {idOcrFields.length} 项</Tag>}
+                </div>
+                <Space size={16} align="start">
+                  {ownerType === '个人' ? (
+                    <>
+                      <Upload listType="picture-card" maxCount={1} accept="image/*"
+                        beforeUpload={(file) => { handleIdOcr(file); return false }}
+                        showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}>
+                        <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>身份证正面</div></div>
+                      </Upload>
+                      <Upload listType="picture-card" maxCount={1} accept="image/*" beforeUpload={() => false}>
+                        <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>身份证反面</div></div>
+                      </Upload>
+                    </>
+                  ) : (
+                    <Upload listType="picture-card" maxCount={1} accept="image/*"
+                      beforeUpload={(file) => { handleIdOcr(file); return false }}
+                      showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}>
+                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>营业执照</div></div>
+                    </Upload>
+                  )}
+                  {idOcrStatus === 'done' && (
+                    <div style={{ paddingTop: 8 }}>
+                      <Space wrap size={[6, 6]}>
+                        <Tag color="green" icon={<CheckCircleOutlined />}>{ownerType === '个人' ? '姓名' : '企业名称'}</Tag>
+                        <Tag color="green" icon={<CheckCircleOutlined />}>证件号码</Tag>
+                      </Space>
+                    </div>
+                  )}
                 </Space>
-              ) : (
-                <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
-                  <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>营业执照</div></div>
-                </Upload>
-              )}
-            </Form.Item>
+              </div>
+            )}
           </Form>
         </Card>
 

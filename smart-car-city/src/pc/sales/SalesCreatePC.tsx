@@ -232,16 +232,59 @@ export default function SalesCreatePC() {
                     onChange={(v) => setBuyerType(v)} />
                 </Form.Item>
               </Col>
-              <Col span={8}>
-                <Form.Item label={buyerType === '企业' ? '企业名称' : '买家姓名'} name="buyerName" rules={[{ required: true }]}>
-                  <Input placeholder={buyerType === '企业' ? '请输入企业名称' : '请输入姓名'} />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="证件号码" name="buyerIdNo" rules={[{ required: true }]}>
-                  <Input placeholder={buyerType === '企业' ? '统一社会信用代码' : '身份证号码'} />
-                </Form.Item>
-              </Col>
+              {buyerType === '个人' && (
+                <>
+                  <Col span={8}>
+                    <Form.Item label="证件类型"><Input value="身份证" disabled /></Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="买家姓名" name="buyerName" rules={[{ required: true }]}>
+                      <Input placeholder="请输入姓名" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="身份证号码" name="buyerIdNo" rules={[{ required: true }]}>
+                      <Input placeholder="请输入身份证号码" />
+                    </Form.Item>
+                  </Col>
+                </>
+              )}
+              {buyerType === '企业' && (
+                <>
+                  <Col span={8}>
+                    <Form.Item label="证件类型"><Input value="统一社会信用代码" disabled /></Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="企业名称" name="buyerName" rules={[{ required: true }]}>
+                      <Input placeholder="请输入企业名称" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="统一社会信用代码" name="buyerIdNo" rules={[{ required: true }]}>
+                      <Input placeholder="统一社会信用代码/组织机构代码" />
+                    </Form.Item>
+                  </Col>
+                </>
+              )}
+              {buyerType === '个体工商户' && (
+                <>
+                  <Col span={8}>
+                    <Form.Item label="法人姓名" name="buyerName" rules={[{ required: true }]}>
+                      <Input placeholder="请输入法人姓名" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="法人证件类型" name="buyerCertType">
+                      <Select options={[{ value: '身份证', label: '身份证' }, { value: '统一社会信用代码', label: '统一社会信用代码/组织机构代码' }]} placeholder="请选择" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="法人证件号码" name="buyerIdNo" rules={[{ required: true }]}>
+                      <Input placeholder="请输入法人证件号码" />
+                    </Form.Item>
+                  </Col>
+                </>
+              )}
               <Col span={8}>
                 <Form.Item label="联系电话" name="buyerPhone" rules={[{ required: true }]}>
                   <Input placeholder="请输入联系电话" />
@@ -255,6 +298,18 @@ export default function SalesCreatePC() {
                   <Upload listType="picture-card" maxCount={1} accept="image/*" beforeUpload={() => false}>
                     <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>营业执照</div></div>
                   </Upload>
+                ) : buyerType === '个体工商户' ? (
+                  <>
+                    <Upload listType="picture-card" maxCount={1} accept="image/*" beforeUpload={() => false}>
+                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>法人身份证正面</div></div>
+                    </Upload>
+                    <Upload listType="picture-card" maxCount={1} accept="image/*" beforeUpload={() => false}>
+                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>法人身份证反面</div></div>
+                    </Upload>
+                    <Upload listType="picture-card" maxCount={1} accept="image/*" beforeUpload={() => false}>
+                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>营业执照</div></div>
+                    </Upload>
+                  </>
                 ) : (
                   <>
                     <Upload listType="picture-card" maxCount={1} accept="image/*" beforeUpload={() => false}>
@@ -286,8 +341,84 @@ export default function SalesCreatePC() {
               </Col>
             </Row>
             {payerIsBuyer ? (
-              <Alert type="success" showIcon icon={<CheckCircleOutlined />}
-                message="付款人与买家一致，无需额外填写付款人信息" style={{ marginTop: 8 }} />
+              <>
+                <Divider style={{ margin: '8px 0 16px' }} />
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 16 }}>收款账户信息</div>
+                {buyerType === '个人' && (
+                  <Row gutter={24}>
+                    <Col span={8}>
+                      <Form.Item label="开户名"><Input value="自动带入买家姓名" disabled /></Form.Item>
+                    </Col>
+                    <Col span={8}>
+                      <Form.Item label="银行卡号" name="payerCardNo" rules={[{ required: true }]}>
+                        <Input placeholder="请输入银行卡号" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                      <Form.Item label="所属银行" name="payerBank" rules={[{ required: true }]}>
+                        <Input placeholder="请输入所属银行" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                      <Form.Item label="银行预留手机" name="payerPhone" rules={[{ required: true }]}>
+                        <Input placeholder="银行预留手机号" />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                )}
+                {buyerType === '企业' && (
+                  <>
+                    <Row gutter={24}>
+                      <Col span={8}>
+                        <Form.Item label="开户名"><Input value="自动带入企业名称" disabled /></Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item label="对公账号" name="payerCardNo" rules={[{ required: true }]}>
+                          <Input placeholder="请输入对公账号" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item label="所属银行" name="payerBank" rules={[{ required: true }]}>
+                          <Input placeholder="请输入所属银行" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                    <Alert type="info" showIcon icon={<InfoCircleOutlined />}
+                      message="系统会自动向该对公账户转入0.01元用于验证账号有效性" style={{ marginTop: 8 }} />
+                  </>
+                )}
+                {buyerType === '个体工商户' && (
+                  <>
+                    <Row gutter={24}>
+                      <Col span={8}>
+                        <Form.Item label="收款方式" name="indivPayMode">
+                          <Select defaultValue="法人个人卡" options={[{ value: '法人个人卡', label: '法人个人卡' }, { value: '对公账户', label: '对公账户' }]} />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item label="开户名"><Input value="自动带入法人姓名/企业名称" disabled /></Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item label="银行卡号/对公账号" name="payerCardNo" rules={[{ required: true }]}>
+                          <Input placeholder="请输入卡号" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item label="所属银行" name="payerBank" rules={[{ required: true }]}>
+                          <Input placeholder="请输入所属银行" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item label="银行预留手机" name="payerPhone">
+                          <Input placeholder="法人个人卡时必填" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                    <Alert type="info" showIcon icon={<InfoCircleOutlined />}
+                      message="选择对公账户时，系统会自动转入0.01元用于验证账号有效性" style={{ marginTop: 8 }} />
+                  </>
+                )}
+              </>
             ) : (
               <>
                 <Divider style={{ margin: '8px 0 16px' }} />

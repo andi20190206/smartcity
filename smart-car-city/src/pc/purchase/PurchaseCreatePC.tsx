@@ -215,13 +215,14 @@ export default function PurchaseCreatePC() {
   }
 
   const handleSubmit = () => {
-    if (vehicles.length === 0 || !vehicles[0].plateNo) {
+    const filledVehicles = vehicles.filter((v) => v.plateNo)
+    if (filledVehicles.length === 0) {
       message.error('请至少添加一台车辆')
       return
     }
     const msg = mode === 'single'
       ? '确认提交采购申请？将生成一车一合同。'
-      : `确认提交采购申请？共${vehicles.length}台车辆，将生成一批一合同。`
+      : `确认提交采购申请？共${filledVehicles.length}台车辆，将生成一批一合同。`
     Modal.confirm({
       title: '提交确认',
       content: msg,
@@ -743,8 +744,8 @@ export default function PurchaseCreatePC() {
         </Space>
       </div>
 
-      {/* 车辆编辑 — 内嵌界面 */}
-      {showVehicleForm && editingVehicle && (
+      {/* 车辆编辑 — 内嵌界面（仅在车辆信息步骤显示） */}
+      {currentStep === 0 && showVehicleForm && editingVehicle && (
         <Card
           size="small"
           title={<span><CarOutlined style={{ marginRight: 6 }} />{vehicles.find((v) => v.key === editingVehicle.key) ? '编辑车辆' : '添加车辆'}</span>}

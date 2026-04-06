@@ -153,7 +153,14 @@ export default function PurchaseCreatePC() {
         next[idx] = editingVehicle
         return next
       }
-      return [...prev, editingVehicle]
+      const newList = [...prev, editingVehicle]
+      // 单车模式下添加第二台车，自动切换为批量模式
+      const filledCount = newList.filter((v) => v.plateNo).length
+      if (mode === 'single' && filledCount > 1) {
+        setMode('batch')
+        message.info('已自动切换为批量采购模式')
+      }
+      return newList
     })
     setShowVehicleForm(false)
     setEditingVehicle(null)
@@ -286,7 +293,7 @@ export default function PurchaseCreatePC() {
               <span style={{ fontSize: 13, color: '#8c8c8c' }}>
                 合计：<span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 700, color: '#E8352E', fontSize: 16 }}>{totalPrice.toFixed(2)}</span> 万
               </span>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => openVehicleForm()} disabled={mode === 'single' && vehicles.length >= 1 && !!vehicles[0]?.plateNo}
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openVehicleForm()}
                 style={{ background: '#E8352E', borderColor: '#E8352E' }}>
                 添加车辆
               </Button>

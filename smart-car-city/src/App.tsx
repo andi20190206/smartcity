@@ -61,6 +61,13 @@ import ContractDetail from './mobile/contract/ContractDetail'
 import ContractListPC from './pc/contract/ContractListPC'
 import ContractDetailPC from './pc/contract/ContractDetailPC'
 
+// PC 端 - 租户管理
+import TenantListPC from './pc/tenant/TenantListPC'
+import TenantDetailPC from './pc/tenant/TenantDetailPC'
+
+// PC 端 - 配置中心
+import ConfigCenterPC from './pc/config/ConfigCenterPC'
+
 export default function App() {
   return (
     <Routes>
@@ -84,6 +91,9 @@ export default function App() {
         <Route path="settlement/:id" element={<SettlementDetailPC />} />
         <Route path="contract" element={<ContractListPC />} />
         <Route path="contract/:id" element={<ContractDetailPC />} />
+        <Route path="config" element={<ConfigCenterPC />} />
+        <Route path="tenant" element={<TenantListPC />} />
+        <Route path="tenant/company/:id" element={<TenantDetailPC />} />
       </Route>
 
       {/* ===== 移动端 ===== */}

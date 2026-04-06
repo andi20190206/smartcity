@@ -49,6 +49,7 @@ export default function SalesCreatePC() {
   const [buyerType, setBuyerType] = useState<string>('个人')
   const [payerIsBuyer, setPayerIsBuyer] = useState(true)
   const [pcIndivPayMode, setPcIndivPayMode] = useState<string>('法人名下银行卡')
+  const [testTypeIndex, setTestTypeIndex] = useState(0)
 
   const selectedVehicles = vehicles.filter((v) => v.selected)
   const totalContract = selectedVehicles.reduce((s, v) => s + v.contractPrice, 0)
@@ -68,11 +69,22 @@ export default function SalesCreatePC() {
   }
 
   const fillTestData = () => {
+    const types = ['个人', '企业', '个体工商户'] as const
+    const t = types[testTypeIndex % 3]
+    setTestTypeIndex(testTypeIndex + 1)
+
     setVehicles((prev) => prev.map((v, i) => i < 3 ? { ...v, selected: true, salesPrice: +(v.contractPrice + 0.5 + i * 0.3).toFixed(2) } : v))
-    buyerForm.setFieldsValue({ buyerType: '个人', buyerName: '刘伟', buyerIdNo: '440106199201011234', buyerPhone: '13900001111' })
-    setBuyerType('个人')
+    setBuyerType(t)
     setPayerIsBuyer(true)
-    message.success('测试数据已填充')
+
+    if (t === '个人') {
+      buyerForm.setFieldsValue({ buyerType: '个人', buyerName: '刘伟', buyerIdNo: '440106199201011234', buyerPhone: '13900001111' })
+    } else if (t === '企业') {
+      buyerForm.setFieldsValue({ buyerType: '企业', buyerName: '广州市恒达汽车贸易有限公司', buyerCertType: '统一社会信用代码', buyerIdNo: '91440101MA5CXLR8XY', buyerPhone: '020-88886666' })
+    } else {
+      buyerForm.setFieldsValue({ buyerType: '个体工商户', buyerName: '广州市顺达汽车服务部', buyerEntCertType: '统一社会信用代码', buyerEntIdNo: '92440106MA9XBCDE3F', buyerLegalName: '黄建国', buyerIdNo: '440106197805012233', buyerPhone: '13700003333' })
+    }
+    message.success(`测试数据已填充（买家类型：${t}）`)
   }
 
   const handleSubmit = () => {

@@ -219,6 +219,8 @@ export default function PurchaseCreate() {
   const [showCertPicker, setShowCertPicker] = useState(false)
   // 收款人身份
   const [payeeIdentity, setPayeeIdentity] = useState<string>('车主')
+  // 测试数据类型循环
+  const [testTypeIndex, setTestTypeIndex] = useState(0)
 
   // 第3步车主证件照片状态
   const [ownerIdPhotos, setOwnerIdPhotos] = useState<Record<string, string>>({})
@@ -231,16 +233,27 @@ export default function PurchaseCreate() {
   const mockSvg = (text: string) => `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150"><rect fill="%23e8e8e8" width="200" height="150" rx="4"/><text x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="12">${encodeURIComponent(text)}</text></svg>`
 
   const fillStep2 = () => {
-    // 车主信息 — DOM填充 + 证件照片
-    const inputs = document.querySelectorAll<HTMLInputElement>('.weui-cells .weui-input')
-    const vals = ['张三', '440106199001011234', '13800138000']
-    inputs.forEach((el, i) => {
-      if (i < vals.length) {
-        const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
-        set?.call(el, vals[i]); el.dispatchEvent(new Event('input', { bubbles: true }))
-      }
-    })
-    setOwnerIdPhotos({ '身份证正面': mockSvg('身份证正面'), '身份证反面': mockSvg('身份证反面') })
+    const types = ['个人', '企业', '个体工商户'] as const
+    const t = types[testTypeIndex % 3]
+    setTestTypeIndex(testTypeIndex + 1)
+    setOwnerTypeState(t)
+
+    if (t === '个人') {
+      const inputs = document.querySelectorAll<HTMLInputElement>('.weui-cells .weui-input')
+      const vals = ['张三', '440106199001011234', '13800138000']
+      inputs.forEach((el, i) => { if (i < vals.length) { const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set; set?.call(el, vals[i]); el.dispatchEvent(new Event('input', { bubbles: true })) } })
+      setOwnerIdPhotos({ '身份证正面': mockSvg('身份证正面'), '身份证反面': mockSvg('身份证反面') })
+    } else if (t === '企业') {
+      const inputs = document.querySelectorAll<HTMLInputElement>('.weui-cells .weui-input')
+      const vals = ['广州市顺达汽车服务有限公司', '91440106MA7DXLR8XY', '020-88886666']
+      inputs.forEach((el, i) => { if (i < vals.length) { const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set; set?.call(el, vals[i]); el.dispatchEvent(new Event('input', { bubbles: true })) } })
+      setOwnerIdPhotos({ '营业执照': mockSvg('营业执照') })
+    } else {
+      const inputs = document.querySelectorAll<HTMLInputElement>('.weui-cells .weui-input')
+      const vals = ['广州市能达汽车服务部', '92440106MA9XBCDE3F', '李法人', '440106198805012233', '13700003333']
+      inputs.forEach((el, i) => { if (i < vals.length) { const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set; set?.call(el, vals[i]); el.dispatchEvent(new Event('input', { bubbles: true })) } })
+      setOwnerIdPhotos({ '法人身份证人像页': mockSvg('法人身份证人像页'), '法人身份证国徽页': mockSvg('法人身份证国徽页'), '营业执照/组织机构代码证': mockSvg('营业执照') })
+    }
   }
 
   const fillStep3 = () => {

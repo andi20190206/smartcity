@@ -75,6 +75,8 @@ export default function PurchaseCreatePC() {
   const [payeeIdentityPC, setPayeeIdentityPC] = useState<string>('车主')
   // 个体工商户银行卡类型
   const [payeeIndivPayMode, setPayeeIndivPayMode] = useState<string>('法人名下银行卡')
+  // 测试数据类型循环
+  const [testTypeIndex, setTestTypeIndex] = useState(0)
   const [delegateOcrStatus, setDelegateOcrStatus] = useState<'idle' | 'scanning' | 'done'>('idle')
   const [delegateOcrFields, setDelegateOcrFields] = useState<string[]>([])
   const [delegateData, setDelegateData] = useState({ name: '', idNo: '', phone: '' })
@@ -202,6 +204,10 @@ export default function PurchaseCreatePC() {
 
   // 填充测试数据
   const fillTestData = () => {
+    const types = ['个人', '企业', '个体工商户'] as const
+    const t = types[testTypeIndex % 3]
+    setTestTypeIndex(testTypeIndex + 1)
+
     const testVehicles: VehicleFormData[] = [
       { key: '1', plateNo: '粤A·D2588', vin: 'LVHCV6637K50CLTS1', brandModel: '别克英朗 2019款 18T 自动互联精英型', engineNo: 'LFV2A21G5K3012345', useType: '非营运', mileage: '3.2', registerDate: '2019-06-15', annualInspection: '2027-06-15', color: '白色', transferCount: '1', price: '5.80', condition: '良好', collision: '正常', waterDamage: '正常', fireDamage: '正常', maintenanceReport: '有' },
     ]
@@ -212,10 +218,21 @@ export default function PurchaseCreatePC() {
       )
     }
     setVehicles(testVehicles)
-    ownerForm.setFieldsValue({ ownerType: '个人', ownerName: '张三', ownerIdNo: '440106199001011234', ownerPhone: '13800138000' })
-    paymentForm.setFieldsValue({ payeeIdentity: '车主', payeeType: '个人', payeeName: '张三', payeeIdNo: '440106199001011234', payeeCardNo: '6222021234567890123', payeeBank: '中国工商银行广州天河支行', payeePhone: '13800138000' })
+    setOwnerType(t)
+
+    if (t === '个人') {
+      ownerForm.setFieldsValue({ ownerType: '个人', ownerName: '张三', ownerIdNo: '440106199001011234', ownerPhone: '13800138000' })
+      paymentForm.setFieldsValue({ payeeIdentity: '车主', payeeCardNo: '6222021234567890123', payeeBank: '中国工商银行广州天河支行', payeePhone: '13800138000' })
+    } else if (t === '企业') {
+      ownerForm.setFieldsValue({ ownerType: '企业', ownerName: '广州市顺达汽车服务有限公司', ownerIdNo: '91440106MA7DXLR8XY', ownerPhone: '020-88886666' })
+      paymentForm.setFieldsValue({ payeeIdentity: '车主', payeeCardNo: '6013823100125678', payeeBank: '中国银行广州分行' })
+    } else {
+      ownerForm.setFieldsValue({ ownerType: '个体工商户', ownerName: '广州市能达汽车服务部', ownerIdNo: '92440106MA9XBCDE3F', legalPersonName: '李法人', legalPersonIdNo: '440106198805012233', ownerPhone: '13700003333' })
+      paymentForm.setFieldsValue({ payeeIdentity: '车主', payeeIndivPayMode: '法人名下银行卡', payeeCardNo: '6222025678901235678', payeeBank: '招商银行广州分行', payeePhone: '13700003333' })
+    }
+    setPayeeIdentityPC('车主')
     deliveryForm.setFieldsValue({ deliveryLocation: '白云服务中心1库（A区）' })
-    message.success('测试数据已填充')
+    message.success(`测试数据已填充（${t}）`)
   }
 
   const handleSubmit = () => {

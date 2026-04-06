@@ -50,6 +50,8 @@ export default function SalesCreate() {
   // 签名
   const [salesSign, setSalesSign] = useState(false)
   const [buyerSign, setBuyerSign] = useState(false)
+  // 测试数据类型循环
+  const [testTypeIndex, setTestTypeIndex] = useState(0)
 
   const selectedVehicles = vehicles.filter((v) => v.selected)
   const totalContract = selectedVehicles.reduce((s, v) => s + (parseFloat(v.contractPrice) || 0), 0)
@@ -86,8 +88,17 @@ export default function SalesCreate() {
     if (step === 0) {
       setVehicles((prev) => prev.map((v, i) => i < 2 ? { ...v, selected: true, salesPrice: (parseFloat(v.contractPrice) + 0.5 + i * 0.3).toFixed(2) } : v))
     } else if (step === 1) {
-      setBuyerType('个人')
-      setBuyerData({ name: '刘伟', idNo: '440106199201011234', phone: '13900001111' })
+      const types = ['个人', '企业', '个体工商户'] as const
+      const t = types[testTypeIndex % 3]
+      setTestTypeIndex(testTypeIndex + 1)
+      setBuyerType(t)
+      if (t === '个人') {
+        setBuyerData({ name: '刘伟', idNo: '440106199201011234', phone: '13900001111' })
+      } else if (t === '企业') {
+        setBuyerData({ name: '广州市恒达汽车贸易有限公司', idNo: '91440101MA5CXLR8XY', phone: '020-88886666' })
+      } else {
+        setBuyerData({ name: '黄建国', idNo: '440106197805012233', phone: '13700003333' })
+      }
     } else if (step === 2) {
       setPayerIsBuyer(true)
     } else if (step === 3) {

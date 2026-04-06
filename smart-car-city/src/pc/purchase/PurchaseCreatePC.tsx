@@ -71,6 +71,10 @@ export default function PurchaseCreatePC() {
   const [delegateIdentity, setDelegateIdentity] = useState<string>('车主本人')
   // 收款人类型
   const [payeeType, setPayeeType] = useState<string>('个人')
+  // 收款人身份
+  const [payeeIdentityPC, setPayeeIdentityPC] = useState<string>('车主')
+  // 个体工商户银行卡类型
+  const [payeeIndivPayMode, setPayeeIndivPayMode] = useState<string>('法人名下银行卡')
   const [delegateOcrStatus, setDelegateOcrStatus] = useState<'idle' | 'scanning' | 'done'>('idle')
   const [delegateOcrFields, setDelegateOcrFields] = useState<string[]>([])
   const [delegateData, setDelegateData] = useState({ name: '', idNo: '', phone: '' })
@@ -615,64 +619,120 @@ export default function PurchaseCreatePC() {
           <Form form={paymentForm} layout="vertical" style={{ maxWidth: 800 }}>
             <Row gutter={24}>
               <Col span={8}>
-                <Form.Item label="收款人身份" name="payeeIdentity" rules={[{ required: true }]}>
-                  <Select options={[{ value: '车主', label: '车主' }, { value: '非车主', label: '非车主' }]} placeholder="请选择" />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="收款人类型" name="payeeType" rules={[{ required: true }]}>
-                  <Select options={[{ value: '个人', label: '个人' }, { value: '企业', label: '企业' }, { value: '个体工商户', label: '个体工商户' }]} placeholder="请选择"
-                    onChange={(v) => setPayeeType(v)} />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="收款人姓名" name="payeeName" rules={[{ required: true }]}>
-                  <Input placeholder="请输入收款人姓名" />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="证件号码" name="payeeIdNo" rules={[{ required: true }]}>
-                  <Input placeholder="请输入证件号码" />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="银行卡号" name="payeeCardNo" rules={[{ required: true }]}>
-                  <Input placeholder="请输入银行卡号" />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="开户行" name="payeeBank" rules={[{ required: true }]}>
-                  <Input placeholder="请输入开户行" />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="银行预留手机" name="payeePhone" rules={[{ required: true }]}>
-                  <Input placeholder="银行预留手机号" />
+                <Form.Item label="收款人身份" name="payeeIdentity" rules={[{ required: true }]} initialValue="车主">
+                  <Select options={[{ value: '车主', label: '车主' }, { value: '非车主', label: '非车主' }]} onChange={(v) => setPayeeIdentityPC(v)} />
                 </Form.Item>
               </Col>
             </Row>
-            <Divider style={{ margin: '8px 0 16px' }} />
-            <Form.Item label="收款人证件 & 银行卡照片">
-              <Space size={16}>
-                {payeeType === '个人' ? (
-                  <>
-                    <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
-                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>身份证正面</div></div>
-                    </Upload>
-                    <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
-                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>身份证反面</div></div>
-                    </Upload>
-                  </>
-                ) : (
-                  <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
-                    <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>营业执照</div></div>
-                  </Upload>
+
+            {/* 收款人=车主：自动带入车主信息，只需填银行卡 */}
+            {payeeIdentityPC === '车主' && (
+              <>
+                <Alert type="success" showIcon icon={<CheckCircleOutlined />}
+                  message="收款人信息自动带入车主/卖方信息" style={{ marginBottom: 16 }} />
+
+                {/* 银行卡信息 — 根据车主类型展示 */}
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 16 }}>银行卡信息</div>
+                {ownerType === '个人' && (
+                  <Row gutter={24}>
+                    <Col span={8}><Form.Item label="开户名"><Input value="自动带入车主姓名" disabled style={{ color: '#bfbfbf' }} /></Form.Item></Col>
+                    <Col span={8}><Form.Item label="银行卡号" name="payeeCardNo" rules={[{ required: true }]}><Input placeholder="请输入银行卡号" /></Form.Item></Col>
+                    <Col span={8}><Form.Item label="所属银行" name="payeeBank" rules={[{ required: true }]}><Input placeholder="请输入所属银行" /></Form.Item></Col>
+                    <Col span={8}><Form.Item label="银行预留手机" name="payeePhone" rules={[{ required: true }]}><Input placeholder="银行预留手机号" /></Form.Item></Col>
+                  </Row>
                 )}
-                <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
-                  <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>银行卡正面</div></div>
-                </Upload>
-              </Space>
-            </Form.Item>
+                {ownerType === '企业' && (
+                  <>
+                    <Row gutter={24}>
+                      <Col span={8}><Form.Item label="开户名"><Input value="自动带入企业名称" disabled style={{ color: '#bfbfbf' }} /></Form.Item></Col>
+                      <Col span={8}><Form.Item label="对公账号" name="payeeCardNo" rules={[{ required: true }]}><Input placeholder="请输入对公账号" /></Form.Item></Col>
+                      <Col span={8}><Form.Item label="所属银行" name="payeeBank" rules={[{ required: true }]}><Input placeholder="请输入所属银行" /></Form.Item></Col>
+                    </Row>
+                    <Alert type="info" showIcon icon={<InfoCircleOutlined />} message="系统会自动向该对公账户转入0.01元用于验证账号有效性" style={{ marginTop: 8 }} />
+                  </>
+                )}
+                {ownerType === '个体工商户' && (
+                  <>
+                    <Row gutter={24}>
+                      <Col span={8}>
+                        <Form.Item label="银行卡类型" name="payeeIndivPayMode" initialValue="法人名下银行卡" rules={[{ required: true }]}>
+                          <Select options={[{ value: '法人名下银行卡', label: '法人名下银行卡' }, { value: '对公账户银行卡', label: '对公账户银行卡' }]} onChange={(v) => setPayeeIndivPayMode(v)} />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item label="账户类型" name="payeeAccountType" initialValue="他行个人账户" rules={[{ required: true }]}>
+                          <Select options={payeeIndivPayMode === '法人名下银行卡'
+                            ? [{ value: '他行个人账户', label: '他行个人账户' }, { value: '中信个人账户', label: '中信个人账户' }]
+                            : [{ value: '他行企业账户', label: '他行企业账户' }, { value: '中信企业账户', label: '中信企业账户' }]
+                          } />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}><Form.Item label="开户名"><Input value={payeeIndivPayMode === '法人名下银行卡' ? '自动带入法人姓名' : '自动带入企业名称'} disabled style={{ color: '#bfbfbf' }} /></Form.Item></Col>
+                      <Col span={8}><Form.Item label="银行卡号" name="payeeCardNo" rules={[{ required: true }]}><Input placeholder="请输入银行卡号" /></Form.Item></Col>
+                      <Col span={8}><Form.Item label="银行名称" name="payeeBank" rules={[{ required: true }]}><Input placeholder="请选择银行" /></Form.Item></Col>
+                      {payeeIndivPayMode === '法人名下银行卡' && (
+                        <Col span={8}><Form.Item label="银行预留手机" name="payeePhone" rules={[{ required: true }]}><Input placeholder="银行预留手机号" /></Form.Item></Col>
+                      )}
+                    </Row>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* 收款人≠车主：需要填写收款人完整信息 */}
+            {payeeIdentityPC === '非车主' && (
+              <>
+                <Divider style={{ margin: '8px 0 16px' }} />
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 16 }}>收款人信息</div>
+                <Row gutter={24}>
+                  <Col span={8}>
+                    <Form.Item label="收款人类型" name="payeeType" rules={[{ required: true }]}>
+                      <Select options={[{ value: '个人', label: '个人' }, { value: '企业', label: '企业' }, { value: '个体工商户', label: '个体工商户' }]} placeholder="请选择"
+                        onChange={(v) => setPayeeType(v)} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="收款人姓名" name="payeeName" rules={[{ required: true }]}>
+                      <Input placeholder="请输入收款人姓名" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="证件类型">
+                      <Input value={payeeType === '个人' ? '身份证' : '统一社会信用代码'} disabled style={{ color: '#bfbfbf' }} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="证件号码" name="payeeIdNo" rules={[{ required: true }]}>
+                      <Input placeholder="请输入证件号码" />
+                    </Form.Item>
+                  </Col>
+                  {payeeType === '个体工商户' && (
+                    <>
+                      <Col span={8}><Form.Item label="法人姓名" name="payeeLegalName" rules={[{ required: true }]}><Input placeholder="请输入法人姓名" /></Form.Item></Col>
+                      <Col span={8}><Form.Item label="法人证件类型"><Input value="身份证" disabled style={{ color: '#bfbfbf' }} /></Form.Item></Col>
+                      <Col span={8}><Form.Item label="法人身份证号码" name="payeeLegalIdNo" rules={[{ required: true }]}><Input placeholder="请输入法人身份证号码" /></Form.Item></Col>
+                    </>
+                  )}
+                </Row>
+                <Divider style={{ margin: '8px 0 16px' }} />
+                <Form.Item label={<span>代收款证明 <span style={{ fontSize: 12, color: '#8c8c8c', fontWeight: 400 }}>（支持图片和PDF，可上传多个）</span></span>} required>
+                  <Upload.Dragger accept="image/*,.pdf" multiple beforeUpload={() => false} style={{ padding: '16px 0' }}>
+                    <p className="ant-upload-drag-icon"><UploadOutlined style={{ fontSize: 28, color: '#bfbfbf' }} /></p>
+                    <p className="ant-upload-text" style={{ fontSize: 13 }}>点击或拖拽上传代收款证明</p>
+                    <p className="ant-upload-hint" style={{ fontSize: 12 }}>支持 JPG/PNG 图片和 PDF 文件</p>
+                  </Upload.Dragger>
+                </Form.Item>
+
+                <Divider style={{ margin: '8px 0 16px' }} />
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 16 }}>银行卡信息</div>
+                <Row gutter={24}>
+                  <Col span={8}><Form.Item label="开户名"><Input value="自动带入收款人姓名" disabled style={{ color: '#bfbfbf' }} /></Form.Item></Col>
+                  <Col span={8}><Form.Item label="银行卡号" name="payeeCardNo" rules={[{ required: true }]}><Input placeholder="请输入银行卡号" /></Form.Item></Col>
+                  <Col span={8}><Form.Item label="所属银行" name="payeeBank" rules={[{ required: true }]}><Input placeholder="请输入所属银行" /></Form.Item></Col>
+                  <Col span={8}><Form.Item label="银行预留手机" name="payeePhone"><Input placeholder="银行预留手机号" /></Form.Item></Col>
+                </Row>
+              </>
+            )}
           </Form>
         </Card>
 

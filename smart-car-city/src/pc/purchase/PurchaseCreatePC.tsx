@@ -349,20 +349,75 @@ export default function PurchaseCreatePC() {
                     onChange={(v) => setOwnerType(v)} />
                 </Form.Item>
               </Col>
-              <Col span={8}>
-                <Form.Item label={ownerType === '个人' ? '姓名' : '企业名称'} name="ownerName" rules={[{ required: true }]}>
-                  <Input placeholder={ownerType === '个人' ? '请输入车主姓名' : '请输入企业名称'}
-                    style={(licenseOcrStatus === 'done' && ownerType === '个体工商户') || idOcrFields.includes('ownerName') ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
-                    suffix={(licenseOcrStatus === 'done' && ownerType === '个体工商户') || idOcrFields.includes('ownerName') ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="证件号码" name="ownerIdNo" rules={[{ required: true }]}>
-                  <Input placeholder={ownerType === '个人' ? '身份证号' : '统一社会信用代码'}
-                    style={(licenseOcrStatus === 'done' && ownerType === '个体工商户') || idOcrFields.includes('ownerIdNo') ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
-                    suffix={(licenseOcrStatus === 'done' && ownerType === '个体工商户') || idOcrFields.includes('ownerIdNo') ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
-                </Form.Item>
-              </Col>
+              {ownerType === '个人' && (
+                <>
+                  <Col span={8}>
+                    <Form.Item label="姓名" name="ownerName" rules={[{ required: true }]}>
+                      <Input placeholder="请输入车主姓名"
+                        style={idOcrFields.includes('ownerName') ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
+                        suffix={idOcrFields.includes('ownerName') ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="身份证号码" name="ownerIdNo" rules={[{ required: true }]}>
+                      <Input placeholder="请输入身份证号码"
+                        style={idOcrFields.includes('ownerIdNo') ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
+                        suffix={idOcrFields.includes('ownerIdNo') ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
+                    </Form.Item>
+                  </Col>
+                </>
+              )}
+              {ownerType === '企业' && (
+                <>
+                  <Col span={8}>
+                    <Form.Item label="企业名称" name="ownerName" rules={[{ required: true }]}>
+                      <Input placeholder="请输入企业名称"
+                        style={idOcrFields.includes('ownerName') ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
+                        suffix={idOcrFields.includes('ownerName') ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="统一社会信用代码" name="ownerIdNo" rules={[{ required: true }]}>
+                      <Input placeholder="请输入统一社会信用代码"
+                        style={idOcrFields.includes('ownerIdNo') ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
+                        suffix={idOcrFields.includes('ownerIdNo') ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
+                    </Form.Item>
+                  </Col>
+                </>
+              )}
+              {ownerType === '个体工商户' && (
+                <>
+                  <Col span={8}>
+                    <Form.Item label="企业名称" name="ownerName" rules={[{ required: true }]}>
+                      <Input placeholder="请输入企业名称"
+                        style={licenseOcrStatus === 'done' ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
+                        suffix={licenseOcrStatus === 'done' ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="证件号码" name="ownerIdNo" rules={[{ required: true }]}>
+                      <Input placeholder="统一社会信用代码/组织机构代码"
+                        style={licenseOcrStatus === 'done' ? { borderColor: '#52c41a', color: '#389e0d' } : undefined}
+                        suffix={licenseOcrStatus === 'done' ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : undefined} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="法人姓名" name="legalPersonName" rules={[{ required: true }]}>
+                      <Input placeholder="请输入法人姓名" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="法人证件类型">
+                      <Input value="身份证" disabled style={{ color: '#bfbfbf' }} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="法人身份证号码" name="legalPersonIdNo" rules={[{ required: true }]}>
+                      <Input placeholder="请输入法人身份证号码" />
+                    </Form.Item>
+                  </Col>
+                </>
+              )}
               <Col span={8}>
                 <Form.Item label="联系电话" name="ownerPhone" rules={[{ required: true }]}>
                   <Input placeholder="请输入手机号" />

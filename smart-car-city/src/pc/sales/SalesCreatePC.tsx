@@ -48,6 +48,7 @@ export default function SalesCreatePC() {
 
   const [buyerType, setBuyerType] = useState<string>('个人')
   const [payerIsBuyer, setPayerIsBuyer] = useState(true)
+  const [pcIndivPayMode, setPcIndivPayMode] = useState<string>('法人名下银行卡')
 
   const selectedVehicles = vehicles.filter((v) => v.selected)
   const totalContract = selectedVehicles.reduce((s, v) => s + v.contractPrice, 0)
@@ -407,12 +408,15 @@ export default function SalesCreatePC() {
                     <Row gutter={24}>
                       <Col span={8}>
                         <Form.Item label="银行卡类型" name="indivPayMode" initialValue="法人名下银行卡" rules={[{ required: true }]}>
-                          <Select options={[{ value: '法人名下银行卡', label: '法人名下银行卡' }, { value: '对公账户银行卡', label: '对公账户银行卡' }]} />
+                          <Select options={[{ value: '法人名下银行卡', label: '法人名下银行卡' }, { value: '对公账户银行卡', label: '对公账户银行卡' }]} onChange={(v) => setPcIndivPayMode(v)} />
                         </Form.Item>
                       </Col>
                       <Col span={8}>
                         <Form.Item label="账户类型" name="indivAccountType" initialValue="他行个人账户" rules={[{ required: true }]}>
-                          <Select options={[{ value: '他行个人账户', label: '他行个人账户' }, { value: '中信个人账户', label: '中信个人账户' }, { value: '他行企业账户', label: '他行企业账户' }, { value: '中信企业账户', label: '中信企业账户' }]} />
+                          <Select options={pcIndivPayMode === '法人名下银行卡'
+                            ? [{ value: '他行个人账户', label: '他行个人账户' }, { value: '中信个人账户', label: '中信个人账户' }]
+                            : [{ value: '他行企业账户', label: '他行企业账户' }, { value: '中信企业账户', label: '中信企业账户' }]
+                          } />
                         </Form.Item>
                       </Col>
                       <Col span={8}>

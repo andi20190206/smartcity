@@ -45,6 +45,7 @@ export default function SalesCreate() {
   const [thirdPayerType, setThirdPayerType] = useState<string>('个人')
   const [thirdPayerIndivMode, setThirdPayerIndivMode] = useState<string>('法人名下银行卡')
   const [thirdPayerEntCert, setThirdPayerEntCert] = useState<string>('统一社会信用代码')
+  const [thirdPayerAccountType, setThirdPayerAccountType] = useState<string>('他行')
 
   // 签名
   const [salesSign, setSalesSign] = useState(false)
@@ -549,12 +550,12 @@ export default function SalesCreate() {
                       <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14, color: 'var(--brand)' }}>*账户类型</label></div>
                       <div className="weui-cell__bd" style={{ display: 'flex', gap: 12 }}>
                         {(thirdPayerIndivMode === '法人名下银行卡'
-                          ? ['中信个人账户', '他行个人账户']
-                          : ['中信企业账户', '他行企业账户']
+                          ? [{ key: '中信', label: '中信个人账户' }, { key: '他行', label: '他行个人账户' }]
+                          : [{ key: '中信', label: '中信企业账户' }, { key: '他行', label: '他行企业账户' }]
                         ).map((opt) => (
-                          <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: 13 }}>
-                            <span style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid var(--text-3)', display: 'inline-block' }} />
-                            {opt}
+                          <label key={opt.key} onClick={() => setThirdPayerAccountType(opt.key)} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: 13 }}>
+                            <span style={{ width: 18, height: 18, borderRadius: '50%', border: thirdPayerAccountType === opt.key ? '5px solid var(--brand)' : '2px solid var(--text-3)', display: 'inline-block' }} />
+                            {opt.label}
                           </label>
                         ))}
                       </div>

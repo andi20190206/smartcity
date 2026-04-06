@@ -411,8 +411,8 @@ export default function SalesCreatePC() {
                         </Form.Item>
                       </Col>
                       <Col span={8}>
-                        <Form.Item label="账户类型" name="indivAccountType" initialValue="他行" rules={[{ required: true }]}>
-                          <Select options={[{ value: '他行', label: '他行个人/企业账户' }, { value: '中信', label: '中信个人/企业账户' }]} />
+                        <Form.Item label="账户类型" name="indivAccountType" initialValue="他行个人账户" rules={[{ required: true }]}>
+                          <Select options={[{ value: '他行个人账户', label: '他行个人账户' }, { value: '中信个人账户', label: '中信个人账户' }, { value: '他行企业账户', label: '他行企业账户' }, { value: '中信企业账户', label: '中信企业账户' }]} />
                         </Form.Item>
                       </Col>
                       <Col span={8}>

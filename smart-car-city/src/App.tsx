@@ -20,6 +20,7 @@ import PurchaseListPC from './pc/purchase/PurchaseListPC'
 import PurchaseDetailPC from './pc/purchase/PurchaseDetailPC'
 import ApprovalListPC from './pc/approval/ApprovalListPC'
 import ApprovalDetailPC from './pc/approval/ApprovalDetailPC'
+import ApprovalConfigPC from './pc/approval/ApprovalConfigPC'
 import FundListPC from './pc/fund/FundListPC'
 import AdvanceDetailPC from './pc/fund/AdvanceDetailPC'
 
@@ -52,6 +53,14 @@ import InventoryDetailPC from './pc/inventory/InventoryDetailPC'
 import SettlementListPC from './pc/settlement/SettlementListPC'
 import SettlementDetailPC from './pc/settlement/SettlementDetailPC'
 
+// 移动端 - 合同管理
+import ContractList from './mobile/contract/ContractList'
+import ContractDetail from './mobile/contract/ContractDetail'
+
+// PC 端 - 合同管理
+import ContractListPC from './pc/contract/ContractListPC'
+import ContractDetailPC from './pc/contract/ContractDetailPC'
+
 export default function App() {
   return (
     <Routes>
@@ -67,11 +76,14 @@ export default function App() {
         <Route path="sales/create" element={<SalesCreatePC />} />
         <Route path="sales/:id" element={<SalesDetailPC />} />
         <Route path="approval" element={<ApprovalListPC />} />
+        <Route path="approval/config" element={<ApprovalConfigPC />} />
         <Route path="approval/:id" element={<ApprovalDetailPC />} />
         <Route path="inventory" element={<InventoryListPC />} />
         <Route path="inventory/:id" element={<InventoryDetailPC />} />
         <Route path="settlement" element={<SettlementListPC />} />
         <Route path="settlement/:id" element={<SettlementDetailPC />} />
+        <Route path="contract" element={<ContractListPC />} />
+        <Route path="contract/:id" element={<ContractDetailPC />} />
       </Route>
 
       {/* ===== 移动端 ===== */}
@@ -108,6 +120,10 @@ export default function App() {
       {/* ===== 移动端 - 库存监管 ===== */}
       <Route path="/inventory" element={<InventoryHome />} />
       <Route path="/inventory/detail/:id" element={<InventoryDetail />} />
+
+      {/* ===== 移动端 - 合同管理 ===== */}
+      <Route path="/contract" element={<ContractList />} />
+      <Route path="/contract/detail/:id" element={<ContractDetail />} />
 
       {/* 默认跳转 */}
       <Route path="/" element={<Navigate to="/home" replace />} />

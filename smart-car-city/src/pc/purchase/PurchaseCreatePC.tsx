@@ -69,6 +69,8 @@ export default function PurchaseCreatePC() {
   const [idOcrFields, setIdOcrFields] = useState<string[]>([])
   // 委托人状态
   const [delegateIdentity, setDelegateIdentity] = useState<string>('车主本人')
+  // 收款人类型
+  const [payeeType, setPayeeType] = useState<string>('个人')
   const [delegateOcrStatus, setDelegateOcrStatus] = useState<'idle' | 'scanning' | 'done'>('idle')
   const [delegateOcrFields, setDelegateOcrFields] = useState<string[]>([])
   const [delegateData, setDelegateData] = useState({ name: '', idNo: '', phone: '' })
@@ -563,7 +565,8 @@ export default function PurchaseCreatePC() {
               </Col>
               <Col span={8}>
                 <Form.Item label="收款人类型" name="payeeType" rules={[{ required: true }]}>
-                  <Select options={[{ value: '个人', label: '个人' }, { value: '企业', label: '企业' }, { value: '个体工商户', label: '个体工商户' }]} placeholder="请选择" />
+                  <Select options={[{ value: '个人', label: '个人' }, { value: '企业', label: '企业' }, { value: '个体工商户', label: '个体工商户' }]} placeholder="请选择"
+                    onChange={(v) => setPayeeType(v)} />
                 </Form.Item>
               </Col>
               <Col span={8}>
@@ -595,17 +598,22 @@ export default function PurchaseCreatePC() {
             <Divider style={{ margin: '8px 0 16px' }} />
             <Form.Item label="收款人证件 & 银行卡照片">
               <Space size={16}>
-                <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
-                  <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>证件正面</div></div>
-                </Upload>
-                <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
-                  <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>证件反面</div></div>
-                </Upload>
+                {payeeType === '个人' ? (
+                  <>
+                    <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
+                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>身份证正面</div></div>
+                    </Upload>
+                    <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
+                      <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>身份证反面</div></div>
+                    </Upload>
+                  </>
+                ) : (
+                  <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
+                    <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>营业执照</div></div>
+                  </Upload>
+                )}
                 <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
                   <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>银行卡正面</div></div>
-                </Upload>
-                <Upload listType="picture-card" maxCount={1} beforeUpload={() => false}>
-                  <div><UploadOutlined /><div style={{ marginTop: 4, fontSize: 12 }}>银行卡反面</div></div>
                 </Upload>
               </Space>
             </Form.Item>

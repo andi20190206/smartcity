@@ -35,13 +35,15 @@ export default function SalesCreate() {
   const [payerData, setPayerData] = useState({ type: '个人', name: '', idNo: '', cardNo: '', bank: '', phone: '' })
 
   // 个体工商户收款方式
-  const [indivPayMode, setIndivPayMode] = useState<string>('法人个人卡')
+  const [indivPayMode, setIndivPayMode] = useState<string>('法人名下银行卡')
+  // 个体工商户账户类型
+  const [indivAccountType, setIndivAccountType] = useState<string>('中信')
   // 企业证件类型
   const [enterpriseCertType, setEnterpriseCertType] = useState<string>('统一社会信用代码')
   const [showCertPicker, setShowCertPicker] = useState(false)
   // 第三方付款人类型
   const [thirdPayerType, setThirdPayerType] = useState<string>('个人')
-  const [thirdPayerIndivMode, setThirdPayerIndivMode] = useState<string>('法人个人卡')
+  const [thirdPayerIndivMode, setThirdPayerIndivMode] = useState<string>('法人名下银行卡')
   const [thirdPayerEntCert, setThirdPayerEntCert] = useState<string>('统一社会信用代码')
 
   // 签名
@@ -362,60 +364,67 @@ export default function SalesCreate() {
               )}
               {buyerType === '个体工商户' && (
                 <>
-                  <div style={{ padding: '0 16px 8px', display: 'flex', gap: 8 }}>
-                    {['法人个人卡', '对公账户'].map((t) => (
-                      <div key={t} onClick={() => setIndivPayMode(t)} style={{
-                        flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: 'pointer',
-                        background: indivPayMode === t ? 'var(--brand)' : '#fff', color: indivPayMode === t ? '#fff' : 'var(--text-1)',
-                        border: indivPayMode === t ? 'none' : '1px solid var(--border)',
-                      }}>{t}</div>
+                  {/* 银行卡类型选择 */}
+                  <div className="weui-cells">
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14, color: 'var(--brand)' }}>*银行卡类型</label></div>
+                      <div className="weui-cell__bd" style={{ display: 'flex', gap: 12 }}>
+                        {['法人名下银行卡', '对公账户银行卡'].map((t) => (
+                          <label key={t} onClick={() => setIndivPayMode(t)} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: 13 }}>
+                            <span style={{ width: 18, height: 18, borderRadius: '50%', border: indivPayMode === t ? '5px solid var(--brand)' : '2px solid var(--text-3)', display: 'inline-block' }} />
+                            {t}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* 银行卡照片 */}
+                  <div style={{ padding: '8px 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                    {['上传银行卡正面', '上传银行卡正面'].map((label, i) => (
+                      <div key={i} className="upload-area" style={{ aspectRatio: '3/2', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                        <Camera size={24} color="var(--text-3)" />
+                        <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{label}</span>
+                      </div>
                     ))}
                   </div>
                   <div className="weui-cells">
-                    {indivPayMode === '法人个人卡' ? (
-                      <>
-                        <div className="weui-cell">
-                          <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>开户名</label></div>
-                          <div className="weui-cell__bd" style={{ fontSize: 14, color: 'var(--text-2)' }}>自动带入法人姓名（不可修改）</div>
-                        </div>
-                        {[
-                          { field: 'cardNo' as const, label: '银行卡号', placeholder: '法人名下银行卡号' },
-                          { field: 'bank' as const, label: '所属银行', placeholder: '请输入所属银行' },
-                          { field: 'phone' as const, label: '预留手机', placeholder: '银行预留手机号' },
-                        ].map((f) => (
-                          <div key={f.field} className="weui-cell">
-                            <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>{f.label}</label></div>
-                            <div className="weui-cell__bd">
-                              <input className="weui-input" placeholder={f.placeholder} value={payerData[f.field]} onChange={(e) => setPayerData({ ...payerData, [f.field]: e.target.value })} style={{ fontSize: 14 }} />
-                            </div>
-                          </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>开户名</label></div>
+                      <div className="weui-cell__bd" style={{ fontSize: 14, color: 'var(--text-3)' }}>
+                        {indivPayMode === '法人名下银行卡' ? '自动带入法人姓名（不可修改）' : '自动带入企业名称（不可修改）'}
+                      </div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14, color: 'var(--brand)' }}>*账户类型</label></div>
+                      <div className="weui-cell__bd" style={{ display: 'flex', gap: 12 }}>
+                        {(indivPayMode === '法人名下银行卡'
+                          ? [{ key: '中信', label: '中信个人账户' }, { key: '他行', label: '他行个人账户' }]
+                          : [{ key: '中信', label: '中信企业账户' }, { key: '他行', label: '他行企业账户' }]
+                        ).map((opt) => (
+                          <label key={opt.key} onClick={() => setIndivAccountType(opt.key)} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: 13 }}>
+                            <span style={{ width: 18, height: 18, borderRadius: '50%', border: indivAccountType === opt.key ? '5px solid var(--brand)' : '2px solid var(--text-3)', display: 'inline-block' }} />
+                            {opt.label}
+                          </label>
                         ))}
-                      </>
-                    ) : (
-                      <>
-                        <div className="weui-cell">
-                          <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>开户名</label></div>
-                          <div className="weui-cell__bd" style={{ fontSize: 14, color: 'var(--text-2)' }}>自动带入企业名称（不可修改）</div>
-                        </div>
-                        {[
-                          { field: 'cardNo' as const, label: '对公账号', placeholder: '请输入对公账号' },
-                          { field: 'bank' as const, label: '所属银行', placeholder: '请输入所属银行' },
-                        ].map((f) => (
-                          <div key={f.field} className="weui-cell">
-                            <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>{f.label}</label></div>
-                            <div className="weui-cell__bd">
-                              <input className="weui-input" placeholder={f.placeholder} value={payerData[f.field]} onChange={(e) => setPayerData({ ...payerData, [f.field]: e.target.value })} style={{ fontSize: 14 }} />
-                            </div>
-                          </div>
-                        ))}
-                      </>
+                      </div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14, color: 'var(--brand)' }}>*银行卡号</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入银行卡号" value={payerData.cardNo} onChange={(e) => setPayerData({ ...payerData, cardNo: e.target.value })} style={{ fontSize: 14 }} /></div>
+                    </div>
+                    <div style={{ padding: '4px 16px 8px', fontSize: 11, color: 'var(--text-3)' }}>请填写与开户名对应的银行卡号，此银行卡将作为今后余额提现到账银行卡</div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14, color: 'var(--brand)' }}>*银行名称</label></div>
+                      <div className="weui-cell__bd" style={{ fontSize: 14 }}>请选择银行</div>
+                      <div className="weui-cell__ft"><ChevronDown size={16} color="var(--text-3)" /></div>
+                    </div>
+                    {indivPayMode === '法人名下银行卡' && (
+                      <div className="weui-cell">
+                        <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14, color: 'var(--brand)' }}>*预留手机</label></div>
+                        <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入银行卡对应银行预留手机号" value={payerData.phone} onChange={(e) => setPayerData({ ...payerData, phone: e.target.value })} style={{ fontSize: 14 }} /></div>
+                      </div>
                     )}
                   </div>
-                  {indivPayMode === '对公账户' && (
-                    <div style={{ margin: '8px 16px', background: 'var(--blue-bg)', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: 'var(--blue)' }}>
-                      ℹ️ 系统会自动向该对公账户转入0.01元用于验证账号有效性
-                    </div>
-                  )}
                 </>
               )}
             </>
@@ -505,40 +514,92 @@ export default function SalesCreate() {
               </div>
 
               <div className="section-hd">收款账户信息</div>
-              <div className="weui-cells">
-                {thirdPayerType === '个体工商户' && (
-                  <div className="weui-cell">
-                    <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>收款方式</label></div>
-                    <div className="weui-cell__bd" style={{ display: 'flex', gap: 8 }}>
-                      {['法人个人卡', '对公账户'].map((t) => (
-                        <span key={t} onClick={() => setThirdPayerIndivMode(t)} style={{
-                          padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-                          background: thirdPayerIndivMode === t ? 'var(--brand)' : 'var(--bg)', color: thirdPayerIndivMode === t ? '#fff' : 'var(--text-1)',
-                        }}>{t}</span>
-                      ))}
+              {thirdPayerType === '个体工商户' ? (
+                <>
+                  {/* 银行卡类型选择 */}
+                  <div className="weui-cells">
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14, color: 'var(--brand)' }}>*银行卡类型</label></div>
+                      <div className="weui-cell__bd" style={{ display: 'flex', gap: 12 }}>
+                        {['法人名下银行卡', '对公账户银行卡'].map((t) => (
+                          <label key={t} onClick={() => setThirdPayerIndivMode(t)} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: 13 }}>
+                            <span style={{ width: 18, height: 18, borderRadius: '50%', border: thirdPayerIndivMode === t ? '5px solid var(--brand)' : '2px solid var(--text-3)', display: 'inline-block' }} />
+                            {t}
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                )}
-                <div className="weui-cell">
-                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>开户名</label></div>
-                  <div className="weui-cell__bd" style={{ fontSize: 14, color: 'var(--text-2)' }}>自动带入（不可修改）</div>
-                </div>
-                <div className="weui-cell">
-                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>{thirdPayerType === '企业' || (thirdPayerType === '个体工商户' && thirdPayerIndivMode === '对公账户') ? '对公账号' : '银行卡号'}</label></div>
-                  <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入" value={payerData.cardNo} onChange={(e) => setPayerData({ ...payerData, cardNo: e.target.value })} style={{ fontSize: 14 }} /></div>
-                </div>
-                <div className="weui-cell">
-                  <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>所属银行</label></div>
-                  <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入所属银行" value={payerData.bank} onChange={(e) => setPayerData({ ...payerData, bank: e.target.value })} style={{ fontSize: 14 }} /></div>
-                </div>
-                {(thirdPayerType === '个人' || (thirdPayerType === '个体工商户' && thirdPayerIndivMode === '法人个人卡')) && (
-                  <div className="weui-cell">
-                    <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>预留手机</label></div>
-                    <div className="weui-cell__bd"><input className="weui-input" placeholder="银行预留手机号" value={payerData.phone} onChange={(e) => setPayerData({ ...payerData, phone: e.target.value })} style={{ fontSize: 14 }} /></div>
+                  <div style={{ padding: '8px 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                    {['上传银行卡正面', '上传银行卡正面'].map((label, i) => (
+                      <div key={i} className="upload-area" style={{ aspectRatio: '3/2', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                        <Camera size={24} color="var(--text-3)" />
+                        <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{label}</span>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
-              {(thirdPayerType === '企业' || (thirdPayerType === '个体工商户' && thirdPayerIndivMode === '对公账户')) && (
+                  <div className="weui-cells">
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>开户名</label></div>
+                      <div className="weui-cell__bd" style={{ fontSize: 14, color: 'var(--text-3)' }}>
+                        {thirdPayerIndivMode === '法人名下银行卡' ? '自动带入法人姓名（不可修改）' : '自动带入企业名称（不可修改）'}
+                      </div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14, color: 'var(--brand)' }}>*账户类型</label></div>
+                      <div className="weui-cell__bd" style={{ display: 'flex', gap: 12 }}>
+                        {(thirdPayerIndivMode === '法人名下银行卡'
+                          ? ['中信个人账户', '他行个人账户']
+                          : ['中信企业账户', '他行企业账户']
+                        ).map((opt) => (
+                          <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: 13 }}>
+                            <span style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid var(--text-3)', display: 'inline-block' }} />
+                            {opt}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14, color: 'var(--brand)' }}>*银行卡号</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入银行卡号" value={payerData.cardNo} onChange={(e) => setPayerData({ ...payerData, cardNo: e.target.value })} style={{ fontSize: 14 }} /></div>
+                    </div>
+                    <div style={{ padding: '4px 16px 8px', fontSize: 11, color: 'var(--text-3)' }}>请填写与开户名对应的银行卡号</div>
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14, color: 'var(--brand)' }}>*银行名称</label></div>
+                      <div className="weui-cell__bd" style={{ fontSize: 14 }}>请选择银行</div>
+                      <div className="weui-cell__ft"><ChevronDown size={16} color="var(--text-3)" /></div>
+                    </div>
+                    {thirdPayerIndivMode === '法人名下银行卡' && (
+                      <div className="weui-cell">
+                        <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14, color: 'var(--brand)' }}>*预留手机</label></div>
+                        <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入银行预留手机号" value={payerData.phone} onChange={(e) => setPayerData({ ...payerData, phone: e.target.value })} style={{ fontSize: 14 }} /></div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="weui-cells">
+                  <div className="weui-cell">
+                    <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>开户名</label></div>
+                    <div className="weui-cell__bd" style={{ fontSize: 14, color: 'var(--text-3)' }}>自动带入（不可修改）</div>
+                  </div>
+                  <div className="weui-cell">
+                    <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>{thirdPayerType === '企业' ? '对公账号' : '银行卡号'}</label></div>
+                    <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入" value={payerData.cardNo} onChange={(e) => setPayerData({ ...payerData, cardNo: e.target.value })} style={{ fontSize: 14 }} /></div>
+                  </div>
+                  <div className="weui-cell">
+                    <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>所属银行</label></div>
+                    <div className="weui-cell__bd"><input className="weui-input" placeholder="请输入所属银行" value={payerData.bank} onChange={(e) => setPayerData({ ...payerData, bank: e.target.value })} style={{ fontSize: 14 }} /></div>
+                  </div>
+                  {thirdPayerType === '个人' && (
+                    <div className="weui-cell">
+                      <div className="weui-cell__hd"><label className="weui-label" style={{ width: 80, fontSize: 14 }}>预留手机</label></div>
+                      <div className="weui-cell__bd"><input className="weui-input" placeholder="银行预留手机号" value={payerData.phone} onChange={(e) => setPayerData({ ...payerData, phone: e.target.value })} style={{ fontSize: 14 }} /></div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {thirdPayerType === '企业' && (
                 <div style={{ margin: '8px 16px', background: 'var(--blue-bg)', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: 'var(--blue)' }}>
                   ℹ️ 系统会自动向该对公账户转入0.01元用于验证账号有效性
                 </div>

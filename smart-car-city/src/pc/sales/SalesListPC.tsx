@@ -247,7 +247,7 @@ export default function SalesListPC() {
             <Button icon={<ReloadOutlined />}>刷新</Button>
             <Button icon={<ExportOutlined />}>导出</Button>
             <Button type="primary" icon={<PlusOutlined />} style={{ background: '#E8352E', borderColor: '#E8352E' }}
-              onClick={() => window.open('/pc/sales/create', '_blank')}>
+              onClick={() => window.open(`${window.location.pathname}#/pc/sales/create`, '_blank')}>
               新建销售单
             </Button>
           </Space>

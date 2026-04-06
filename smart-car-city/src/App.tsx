@@ -68,6 +68,9 @@ import TenantDetailPC from './pc/tenant/TenantDetailPC'
 // PC 端 - 配置中心
 import ConfigCenterPC from './pc/config/ConfigCenterPC'
 
+// PC 端 - 设备管理
+import DeviceListPC from './pc/device/DeviceListPC'
+
 // 入口选择页
 import Portal from './Portal'
 
@@ -95,6 +98,7 @@ export default function App() {
         <Route path="contract" element={<ContractListPC />} />
         <Route path="contract/:id" element={<ContractDetailPC />} />
         <Route path="config" element={<ConfigCenterPC />} />
+        <Route path="device" element={<DeviceListPC />} />
         <Route path="tenant" element={<TenantListPC />} />
         <Route path="tenant/company/:id" element={<TenantDetailPC />} />
       </Route>

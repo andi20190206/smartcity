@@ -24,6 +24,36 @@ export interface ApprovalNode {
   time?: string
 }
 
+/** 采购车辆定价信息 */
+export interface VehiclePricingInfo {
+  plateNo: string
+  brandModel: string
+  vin: string
+  /** 采购价（万） */
+  purchasePrice: number
+  /** 建议采购价（万），定价接口返回，null 表示未获取到定价 */
+  suggestedPrice: number | null
+  /** 定价状态 */
+  pricingStatus: 'priced' | 'no_price' | 'pending'
+  /** 定价偏差率（%），仅在有建议价时计算 */
+  deviationRate?: number
+}
+
+/** 门店授信额度信息 */
+export interface DealerCreditInfo {
+  storeName: string
+  /** 最大额度（万） */
+  maxQuota: number
+  /** 在途额度（万） */
+  inTransitQuota: number
+  /** 可用额度（万） */
+  availableQuota: number
+  /** 本次采购占用额度（万） */
+  currentPurchaseAmount: number
+  /** 审批后预计可用额度（万） */
+  estimatedAvailableQuota: number
+}
+
 /** 审批单 */
 export interface ApprovalRecord {
   id: string
@@ -55,4 +85,8 @@ export interface ApprovalRecord {
   brandModel?: string
   createTime: string
   updateTime: string
+  /** 采购审批专用：车辆定价信息列表 */
+  vehiclePricingList?: VehiclePricingInfo[]
+  /** 采购审批专用：门店授信额度信息 */
+  dealerCredit?: DealerCreditInfo
 }

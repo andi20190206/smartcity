@@ -31,6 +31,16 @@ import AdvanceCreate from './mobile/fund/AdvanceCreate'
 import InTransitList from './mobile/fund/InTransitList'
 import PurchaseCreatePC from './pc/purchase/PurchaseCreatePC'
 
+// 移动端 - 用车管理
+import VehicleUseList from './mobile/vehicle-use/VehicleUseList'
+import VehicleUseApply from './mobile/vehicle-use/VehicleUseApply'
+
+// 移动端 - 消息通知
+import MessageList from './mobile/message/MessageList'
+
+// 移动端 - 额度查询
+import QuotaQuery from './mobile/fund/QuotaQuery'
+
 // 移动端 - 销售管理
 import SalesList from './mobile/sales/SalesList'
 import SalesCreate from './mobile/sales/SalesCreate'
@@ -128,6 +138,16 @@ export default function App() {
       {/* ===== 移动端 - 审批中心 ===== */}
       <Route path="/approval" element={<ApprovalList />} />
       <Route path="/approval/detail/:id" element={<ApprovalDetail />} />
+
+      {/* ===== 移动端 - 用车管理 ===== */}
+      <Route path="/vehicle-use" element={<VehicleUseList />} />
+      <Route path="/vehicle-use/apply" element={<VehicleUseApply />} />
+
+      {/* ===== 移动端 - 消息通知 ===== */}
+      <Route path="/message" element={<MessageList />} />
+
+      {/* ===== 移动端 - 额度查询 ===== */}
+      <Route path="/quota" element={<QuotaQuery />} />
 
       {/* ===== 移动端 - 销售管理 ===== */}
       <Route path="/sales" element={<SalesList />} />

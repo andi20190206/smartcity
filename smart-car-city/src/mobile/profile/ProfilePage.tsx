@@ -2,10 +2,10 @@ import { useNavigate } from 'react-router-dom'
 import { Bell, CreditCard, FileText, Settings, ChevronRight, LogOut, Wallet, Package, Clock } from 'lucide-react'
 
 const menus = [
-  { label: '消息通知', icon: Bell, badge: 3, color: '#FF3B30', bg: 'rgba(255,59,48,0.08)' },
-  { label: '额度查询', icon: CreditCard, color: '#007AFF', bg: 'rgba(0,122,255,0.08)' },
-  { label: '用户协议', icon: FileText, color: '#8E8E93', bg: 'rgba(0,0,0,0.04)' },
-  { label: '设置', icon: Settings, color: '#8E8E93', bg: 'rgba(0,0,0,0.04)' },
+  { label: '消息通知', icon: Bell, badge: 3, color: '#FF3B30', bg: 'rgba(255,59,48,0.08)', path: '/message' },
+  { label: '额度查询', icon: CreditCard, color: '#007AFF', bg: 'rgba(0,122,255,0.08)', path: '/quota' },
+  { label: '用户协议', icon: FileText, color: '#8E8E93', bg: 'rgba(0,0,0,0.04)', path: '' },
+  { label: '设置', icon: Settings, color: '#8E8E93', bg: 'rgba(0,0,0,0.04)', path: '' },
 ]
 
 export default function ProfilePage() {
@@ -64,7 +64,7 @@ export default function ProfilePage() {
         {menus.map((m, i) => {
           const Icon = m.icon
           return (
-            <div key={m.label} style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', borderBottom: i < menus.length - 1 ? '0.5px solid var(--border)' : 'none', cursor: 'pointer' }}>
+            <div key={m.label} onClick={() => m.path && navigate(m.path)} style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', borderBottom: i < menus.length - 1 ? '0.5px solid var(--border)' : 'none', cursor: 'pointer' }}>
               <div style={{ width: 34, height: 34, borderRadius: 10, background: m.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
                 <Icon size={17} color={m.color} strokeWidth={1.8} />
               </div>

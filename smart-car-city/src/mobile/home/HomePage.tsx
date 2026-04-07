@@ -1,4 +1,5 @@
-import { Upload, Store, Wrench, Search, Globe, Bell, MapPin, Flame } from 'lucide-react'
+import { Upload, Store, Wrench, Search, Globe, Bell, MapPin, Flame, Car } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { getCarImage, handleImgError } from '../../shared/constants/carImages'
 
 const entries = [
@@ -19,6 +20,7 @@ const cars = [
 ]
 
 export default function HomePage() {
+  const navigate = useNavigate()
   return (
     <div className="page page-tabbar" style={{ background: 'var(--bg)' }}>
       {/* Dark header */}
@@ -35,8 +37,9 @@ export default function HomePage() {
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: 1 }}>唯车帮</div>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2, letterSpacing: 0.5 }}>二手车线上经销平台</div>
           </div>
-          <div style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={() => navigate('/message')} style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
             <Bell size={18} color="rgba(255,255,255,0.7)" />
+            <div style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: 'var(--brand)', border: '1.5px solid #1A1A2E' }} />
           </div>
         </div>
 
@@ -67,6 +70,28 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* 业务服务 */}
+      <div className="anim d2" style={{ margin: '0 16px 12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        {[
+          { icon: Car, label: '用车申请', desc: '发起用车', path: '/vehicle-use/apply', color: '#007AFF', bg: 'rgba(0,122,255,0.08)' },
+          { icon: Upload, label: '垫款申请', desc: '申请车辆垫款', path: '/fund/advance/create', color: '#34C759', bg: 'rgba(52,199,89,0.08)' },
+        ].map((s) => (
+          <div key={s.label} onClick={() => navigate(s.path)} style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '14px 14px',
+            background: '#fff', borderRadius: 12, border: '1px solid var(--border)',
+            cursor: 'pointer', boxShadow: 'var(--shadow-sm)',
+          }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <s.icon size={18} color={s.color} />
+            </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-0)' }}>{s.label}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-2)', marginTop: 1 }}>{s.desc}</div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Recommend */}

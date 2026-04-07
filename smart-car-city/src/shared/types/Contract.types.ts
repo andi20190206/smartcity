@@ -20,7 +20,9 @@ export interface ContractVehicleItem {
   transferCount?: number
   condition?: string     // 车况：好/一般
   /** 第三方估价信息 */
-  thirdPartyPrice?: number | null  // 第三方平台估价(万元)
+  thirdPartyPrice?: number | null  // 第三方平台估价(万元) - 车况良好
+  thirdPartyPriceFair?: number | null // 车况一般(万元)
+  thirdPartyPricePoor?: number | null // 车况较差(万元)
   newCarGuidePrice?: number | null // 新车指导价(万元)
   vehicleAge?: string              // 车龄
 }

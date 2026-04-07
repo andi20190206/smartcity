@@ -303,7 +303,7 @@ export default function InventoryListPC() {
         <div className="table-card-header">
           <div className="title">
             <WarningOutlined />
-            库存监管
+            库存管理
           </div>
           <Space>
             <Button icon={<ImportOutlined />}>批量导入</Button>
@@ -315,7 +315,6 @@ export default function InventoryListPC() {
         <Tabs activeKey={activeTab} onChange={setActiveTab} style={{ padding: '0 20px' }}
           items={[
             { key: 'vehicles', label: '监管车辆' },
-            { key: 'registration', label: '签注管理' },
             { key: 'alerts', label: '告警记录' },
             { key: 'use', label: '用车管理' },
             { key: 'check', label: '库存盘点' },
@@ -330,7 +329,7 @@ export default function InventoryListPC() {
             value={searchText} onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 300 }} allowClear
           />
-          {(activeTab === 'vehicles' || activeTab === 'registration') && (
+          {activeTab === 'vehicles' && (
             <>
               <Select placeholder="库存状态" allowClear style={{ width: 120 }}
                 value={stockFilter} onChange={setStockFilter}
@@ -360,53 +359,6 @@ export default function InventoryListPC() {
               scroll={{ x: 1900 }}
               pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `共 ${total} 条` }}
               rowClassName={(r) => r.stockDays >= 60 ? 'row-warning' : r.isScrapped ? 'row-warning' : ''}
-            />
-          )}
-          {activeTab === 'registration' && (
-            <Table
-              columns={[
-                {
-                  title: 'VIN码', dataIndex: 'vin', key: 'vin', width: 180,
-                  render: (v: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 12 }}>{v}</span>,
-                },
-                { title: '车牌', dataIndex: 'plateNo', key: 'plateNo', width: 110, render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span> },
-                { title: '品牌车系', dataIndex: 'brandModel', key: 'brandModel', width: 220 },
-                { title: '所属门店', dataIndex: 'storeName', key: 'storeName', width: 110 },
-                { title: '经销公司', dataIndex: 'companyName', key: 'companyName', width: 180 },
-                { title: '签约时间', dataIndex: 'signTime', key: 'signTime', width: 110, render: (t: string) => <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t || '-'}</span> },
-                { title: '业务员', dataIndex: 'salesperson', key: 'salesperson', width: 80 },
-                {
-                  title: '垫款状态', dataIndex: 'loanStatus', key: 'loanStatus', width: 90,
-                  render: (v: string) => <Tag color={v === '已垫款' ? 'green' : 'default'} style={{ borderRadius: 4 }}>{v || '-'}</Tag>,
-                },
-                { title: '旧车主', dataIndex: 'oldOwner', key: 'oldOwner', width: 140, render: (v: string) => <span>{v || '-'}</span> },
-                {
-                  title: '签注状态', dataIndex: 'registrationStatus', key: 'registrationStatus', width: 90,
-                  render: (_: unknown, r: SupervisedVehicle) => (
-                    <Tag color={r.registrationStatus === 'registered' ? 'green' : 'warning'} style={{ borderRadius: 4 }}>
-                      {r.registrationStatusText || '-'}
-                    </Tag>
-                  ),
-                },
-                {
-                  title: '签注时间', dataIndex: 'registrationTime', key: 'registrationTime', width: 110,
-                  render: (t: string) => <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t || '-'}</span>,
-                },
-                {
-                  title: '操作', key: 'action', width: 120, fixed: 'right',
-                  render: (_: unknown, r: SupervisedVehicle) => (
-                    <Space>
-                      {r.registrationStatus === 'pending' && (
-                        <Button type="link" size="small">确认签注</Button>
-                      )}
-                      <Button type="text" size="small">备注</Button>
-                    </Space>
-                  ),
-                },
-              ] as ColumnsType<SupervisedVehicle>}
-              dataSource={filteredVehicles.filter((v) => v.source === '库存金融')}
-              rowKey="id" size="middle" scroll={{ x: 1600 }}
-              pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `共 ${total} 条` }}
             />
           )}
           {activeTab === 'alerts' && (

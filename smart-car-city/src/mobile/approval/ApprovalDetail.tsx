@@ -85,9 +85,20 @@ export default function ApprovalDetail() {
           </div>
         </div>
         <div style={{ fontSize: 14, opacity: 0.85, lineHeight: 1.5, marginBottom: 12 }}>{record.summary}</div>
+        {record.type === 'purchase' && record.purchaseMode && (
+          <div style={{ marginBottom: 8 }}>
+            <span style={{
+              fontSize: 11, padding: '3px 8px', borderRadius: 6, fontWeight: 600,
+              background: record.purchaseMode === 'batch' ? 'var(--blue-bg)' : 'var(--green-bg)',
+              color: record.purchaseMode === 'batch' ? 'var(--blue)' : 'var(--green)',
+            }}>
+              {record.purchaseMode === 'batch' ? `多台采购（${record.vehiclePricingList?.length || 0}台）` : '单台采购'}
+            </span>
+          </div>
+        )}
         {record.amount !== undefined && (
           <div>
-            <div style={{ fontSize: 11, opacity: 0.5, marginBottom: 4 }}>涉及金额</div>
+            <div style={{ fontSize: 11, opacity: 0.5, marginBottom: 4 }}>{record.type === 'purchase' ? '采购金额' : '涉及金额'}</div>
             <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-num)', letterSpacing: -1 }}>
               {record.amount.toFixed(2)}
               <span style={{ fontSize: 13, fontWeight: 400, opacity: 0.6, marginLeft: 2 }}>万</span>
@@ -141,60 +152,7 @@ export default function ApprovalDetail() {
           </div>
         ))}
       </div>
-      {/* 门店授信额度 - 仅采购审批 */}
-      {record.type === 'purchase' && record.dealerCredit && (
-        <>
-          <div className="section-hd">门店授信额度</div>
-          <div className="anim d2" style={{
-            margin: '0 16px 12px', background: '#fff', borderRadius: 14,
-            border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden',
-          }}>
-            <div style={{
-              padding: '14px 16px', background: 'linear-gradient(135deg, rgba(0,122,255,0.06) 0%, rgba(88,86,214,0.04) 100%)',
-              borderBottom: '1px solid var(--border)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                <Building2 size={14} color="var(--blue)" />
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-0)' }}>{record.dealerCredit.storeName}</span>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[
-                  { label: '最大额度', value: record.dealerCredit.maxQuota, color: 'var(--text-0)' },
-                  { label: '在途额度', value: record.dealerCredit.inTransitQuota, color: 'var(--orange)' },
-                  { label: '可用额度', value: record.dealerCredit.availableQuota, color: record.dealerCredit.availableQuota < 0 ? 'var(--red)' : 'var(--green)' },
-                ].map((item) => (
-                  <div key={item.label} style={{ flex: 1, textAlign: 'center', padding: '8px 4px', background: 'rgba(255,255,255,0.8)', borderRadius: 8 }}>
-                    <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 4 }}>{item.label}</div>
-                    <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-num)', color: item.color }}>{item.value.toFixed(2)}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-2)' }}>万</span></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div style={{ padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: 'var(--text-2)' }}>本次采购占用</span>
-              <span style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-num)', color: 'var(--brand)' }}>{record.dealerCredit.currentPurchaseAmount.toFixed(2)}万</span>
-            </div>
-            <div style={{ padding: '0 16px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: 'var(--text-2)' }}>审批后预计可用</span>
-              <span style={{
-                fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-num)',
-                color: record.dealerCredit.estimatedAvailableQuota < 0 ? 'var(--red)' : 'var(--green)',
-              }}>{record.dealerCredit.estimatedAvailableQuota.toFixed(2)}万</span>
-            </div>
-            {record.dealerCredit.estimatedAvailableQuota < 0 && (
-              <div style={{
-                margin: '0 12px 10px', padding: '8px 10px', borderRadius: 8,
-                background: 'var(--red-bg)', display: 'flex', alignItems: 'center', gap: 6,
-              }}>
-                <AlertTriangle size={13} color="var(--red)" />
-                <span style={{ fontSize: 12, color: 'var(--red)' }}>本次采购将超出可用额度，请谨慎审批</span>
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* 车辆定价信息 - 仅采购审批 */}
+      {/* 车辆定价信息 - 仅采购审批，紧跟基本信息 */}
       {record.type === 'purchase' && record.vehiclePricingList && record.vehiclePricingList.length > 0 && (
         <>
           <div className="section-hd">车辆定价信息{record.vehiclePricingList.length > 1 ? `（共${record.vehiclePricingList.length}台）` : ''}</div>
@@ -205,7 +163,6 @@ export default function ApprovalDetail() {
               border: v.pricingStatus === 'no_price' ? '1px solid rgba(255,149,0,0.3)' : '1px solid var(--border)',
               boxShadow: 'var(--shadow-sm)', overflow: 'hidden',
             }}>
-              {/* 车辆标题 */}
               {record.vehiclePricingList!.length > 1 && (
                 <div style={{
                   padding: '10px 16px', background: 'rgba(0,0,0,0.02)',
@@ -221,7 +178,6 @@ export default function ApprovalDetail() {
                   <span style={{ fontSize: 12, color: 'var(--text-2)', flex: 1 }}>{v.brandModel}</span>
                 </div>
               )}
-              {/* 价格对比 */}
               <div style={{ padding: '12px 16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -244,7 +200,6 @@ export default function ApprovalDetail() {
                     }}>暂无定价</span>
                   )}
                 </div>
-                {/* 偏差率 */}
                 {v.pricingStatus === 'priced' && v.deviationRate !== undefined && (
                   <div style={{
                     marginTop: 8, padding: '6px 10px', borderRadius: 8,
@@ -261,7 +216,6 @@ export default function ApprovalDetail() {
                     </span>
                   </div>
                 )}
-                {/* 无定价提示 */}
                 {v.pricingStatus === 'no_price' && (
                   <div style={{
                     padding: '8px 10px', borderRadius: 8,
@@ -277,6 +231,53 @@ export default function ApprovalDetail() {
               </div>
             </div>
           ))}
+        </>
+      )}
+
+      {/* 门店授信额度 - 仅采购审批 */}
+      {record.type === 'purchase' && record.dealerCredit && (
+        <>
+          <div className="section-hd">门店授信额度</div>
+          <div className="anim d2" style={{
+            margin: '0 16px 12px', background: '#fff', borderRadius: 14,
+            border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden',
+          }}>
+            <div style={{
+              padding: '14px 16px', background: 'linear-gradient(135deg, rgba(0,122,255,0.06) 0%, rgba(88,86,214,0.04) 100%)',
+              borderBottom: '1px solid var(--border)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                <Building2 size={14} color="var(--blue)" />
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-0)' }}>{record.dealerCredit.storeName}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {[
+                  { label: '最大额度', value: record.dealerCredit.maxQuota, color: 'var(--text-0)' },
+                  { label: '在途额度', value: record.dealerCredit.inTransitQuota, color: 'var(--orange)' },
+                  { label: '可用额度', value: record.dealerCredit.availableQuota, color: record.dealerCredit.availableQuota < 0 ? 'var(--red)' : 'var(--green)' },
+                  { label: '可申请额度', value: record.dealerCredit.applyableQuota, color: record.dealerCredit.applyableQuota < 0 ? 'var(--red)' : 'var(--blue)' },
+                ].map((item) => (
+                  <div key={item.label} style={{ flex: '1 1 calc(50% - 4px)', minWidth: 0, textAlign: 'center', padding: '8px 4px', background: 'rgba(255,255,255,0.8)', borderRadius: 8 }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 4 }}>{item.label}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-num)', color: item.color }}>{item.value.toFixed(2)}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-2)' }}>万</span></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-2)' }}>本次采购占用</span>
+              <span style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-num)', color: 'var(--brand)' }}>{record.dealerCredit.currentPurchaseAmount.toFixed(2)}万</span>
+            </div>
+            {record.dealerCredit.applyableQuota < 0 && (
+              <div style={{
+                margin: '0 12px 10px', padding: '8px 10px', borderRadius: 8,
+                background: 'var(--red-bg)', display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <AlertTriangle size={13} color="var(--red)" />
+                <span style={{ fontSize: 12, color: 'var(--red)' }}>额度预警：可申请额度为负数，请谨慎审批</span>
+              </div>
+            )}
+          </div>
         </>
       )}
 

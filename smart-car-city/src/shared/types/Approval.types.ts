@@ -48,10 +48,10 @@ export interface DealerCreditInfo {
   inTransitQuota: number
   /** 可用额度（万） */
   availableQuota: number
+  /** 可申请额度（万） */
+  applyableQuota: number
   /** 本次采购占用额度（万） */
   currentPurchaseAmount: number
-  /** 审批后预计可用额度（万） */
-  estimatedAvailableQuota: number
 }
 
 /** 审批单 */
@@ -89,4 +89,6 @@ export interface ApprovalRecord {
   vehiclePricingList?: VehiclePricingInfo[]
   /** 采购审批专用：门店授信额度信息 */
   dealerCredit?: DealerCreditInfo
+  /** 采购审批专用：采购类型 */
+  purchaseMode?: 'single' | 'batch'
 }

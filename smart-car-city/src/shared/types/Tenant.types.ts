@@ -29,15 +29,15 @@ export interface Store {
   createTime: string
 }
 
-/** 车商 */
+/** 车商（直接挂靠在经销公司下，系统分配门店身份） */
 export interface Dealer {
   id: string
   name: string
   accountName: string
   companyId: string
   companyName: string
-  storeId: string
-  storeName: string
+  /** 系统分配的门店身份 */
+  assignedStoreName: string
   contact: string
   phone: string
   depositBalance: number

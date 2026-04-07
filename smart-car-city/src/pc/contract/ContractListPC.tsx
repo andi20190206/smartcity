@@ -116,7 +116,7 @@ export default function ContractListPC() {
       ),
     },
     {
-      title: '签署进度',
+      title: '签约状态',
       key: 'signProgress',
       width: 140,
       render: (_: unknown, record: Contract) => {
@@ -146,17 +146,6 @@ export default function ContractListPC() {
       width: 180,
       ellipsis: true,
       render: (name: string) => <span style={{ fontSize: 13 }}>{name}</span>,
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      width: 90,
-      render: (status: string) => (
-        <Tag color={statusColorMap[status]} style={{ borderRadius: 4 }}>
-          {statusTextMap[status] || status}
-        </Tag>
-      ),
     },
     {
       title: '创建时间',

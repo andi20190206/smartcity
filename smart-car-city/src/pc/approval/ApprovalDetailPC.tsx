@@ -114,12 +114,27 @@ export default function ApprovalDetailPC() {
             <Descriptions.Item label="审批类型">{approvalTypeText[record.type]}</Descriptions.Item>
             <Descriptions.Item label="申请人">{record.applicant}（{record.applicantRole}）</Descriptions.Item>
             <Descriptions.Item label="经销公司">{record.dealerCompany}</Descriptions.Item>
-            {record.amount !== undefined && (
+            {record.type === 'purchase' && record.amount !== undefined && (
+              <Descriptions.Item label="采购金额">
+                <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 700, color: '#E8352E', fontSize: 16 }}>
+                  {record.amount.toFixed(2)}
+                  <span style={{ fontSize: 12, fontWeight: 400, color: '#8c8c8c', marginLeft: 2 }}>万</span>
+                </span>
+              </Descriptions.Item>
+            )}
+            {record.type !== 'purchase' && record.amount !== undefined && (
               <Descriptions.Item label="涉及金额">
                 <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 700, color: '#E8352E', fontSize: 16 }}>
                   {record.amount.toFixed(2)}
                   <span style={{ fontSize: 12, fontWeight: 400, color: '#8c8c8c', marginLeft: 2 }}>万</span>
                 </span>
+              </Descriptions.Item>
+            )}
+            {record.type === 'purchase' && record.purchaseMode && (
+              <Descriptions.Item label="采购类型">
+                <Tag color={record.purchaseMode === 'batch' ? 'blue' : 'green'} style={{ borderRadius: 4 }}>
+                  {record.purchaseMode === 'batch' ? `多台采购（${record.vehiclePricingList?.length || 0}台）` : '单台采购'}
+                </Tag>
               </Descriptions.Item>
             )}
             {record.plateNo && <Descriptions.Item label="车牌号">{record.plateNo}</Descriptions.Item>}
@@ -128,60 +143,7 @@ export default function ApprovalDetailPC() {
         </div>
       </div>
 
-      {/* 门店授信额度 - 仅采购审批 */}
-      {record.type === 'purchase' && record.dealerCredit && (
-        <div className="detail-section">
-          <div className="detail-section-title"><BankOutlined /> 门店授信额度</div>
-          <div className="detail-section-body">
-            <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
-              {[
-                { label: '最大额度', value: record.dealerCredit.maxQuota, color: '#1a1a2e', bg: '#f5f5f5' },
-                { label: '在途额度', value: record.dealerCredit.inTransitQuota, color: '#fa8c16', bg: '#fff7e6' },
-                { label: '可用额度', value: record.dealerCredit.availableQuota, color: record.dealerCredit.availableQuota < 0 ? '#ff4d4f' : '#52c41a', bg: record.dealerCredit.availableQuota < 0 ? '#fff2f0' : '#f6ffed' },
-              ].map((item) => (
-                <div key={item.label} style={{
-                  flex: 1, padding: '16px 20px', borderRadius: 12, background: item.bg,
-                  textAlign: 'center',
-                }}>
-                  <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 8 }}>{item.label}</div>
-                  <div style={{ fontSize: 24, fontWeight: 700, fontFamily: "'DM Sans', monospace", color: item.color }}>
-                    {item.value.toFixed(2)}
-                    <span style={{ fontSize: 13, fontWeight: 400, color: '#8c8c8c', marginLeft: 2 }}>万</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Descriptions column={2} size="small" labelStyle={{ color: '#8c8c8c', fontSize: 13 }} contentStyle={{ fontSize: 13 }}>
-              <Descriptions.Item label="门店名称">{record.dealerCredit.storeName}</Descriptions.Item>
-              <Descriptions.Item label="本次采购占用">
-                <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 600, color: '#1890ff' }}>
-                  {record.dealerCredit.currentPurchaseAmount.toFixed(2)}万
-                </span>
-              </Descriptions.Item>
-              <Descriptions.Item label="审批后预计可用">
-                <span style={{
-                  fontFamily: "'DM Sans', monospace", fontWeight: 600,
-                  color: record.dealerCredit.estimatedAvailableQuota < 0 ? '#ff4d4f' : '#52c41a',
-                }}>
-                  {record.dealerCredit.estimatedAvailableQuota.toFixed(2)}万
-                </span>
-              </Descriptions.Item>
-            </Descriptions>
-            {record.dealerCredit.estimatedAvailableQuota < 0 && (
-              <Alert
-                type="error"
-                showIcon
-                icon={<WarningOutlined />}
-                message="额度预警"
-                description="本次采购将超出门店可用额度，请谨慎审批"
-                style={{ marginTop: 12, borderRadius: 8 }}
-              />
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 车辆定价信息 - 仅采购审批 */}
+      {/* 车辆定价信息 - 仅采购审批，紧跟审批摘要 */}
       {record.type === 'purchase' && record.vehiclePricingList && record.vehiclePricingList.length > 0 && (
         <div className="detail-section">
           <div className="detail-section-title">
@@ -258,7 +220,6 @@ export default function ApprovalDetailPC() {
                     if (row.pricingStatus === 'no_price' || row.deviationRate === undefined) {
                       return <span style={{ color: '#bfbfbf' }}>—</span>
                     }
-                    const color = row.deviationRate < -10 ? '#ff4d4f' : row.deviationRate < 0 ? '#52c41a' : '#fa8c16'
                     return (
                       <Tag color={row.deviationRate < -10 ? 'error' : row.deviationRate < 0 ? 'success' : 'warning'} style={{ borderRadius: 4 }}>
                         {row.deviationRate > 0 ? '+' : ''}{row.deviationRate.toFixed(2)}%
@@ -268,6 +229,52 @@ export default function ApprovalDetailPC() {
                 },
               ]}
             />
+          </div>
+        </div>
+      )}
+
+      {/* 门店授信额度 - 仅采购审批 */}
+      {record.type === 'purchase' && record.dealerCredit && (
+        <div className="detail-section">
+          <div className="detail-section-title"><BankOutlined /> 门店授信额度</div>
+          <div className="detail-section-body">
+            <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+              {[
+                { label: '最大额度', value: record.dealerCredit.maxQuota, color: '#1a1a2e', bg: '#f5f5f5' },
+                { label: '在途额度', value: record.dealerCredit.inTransitQuota, color: '#fa8c16', bg: '#fff7e6' },
+                { label: '可用额度', value: record.dealerCredit.availableQuota, color: record.dealerCredit.availableQuota < 0 ? '#ff4d4f' : '#52c41a', bg: record.dealerCredit.availableQuota < 0 ? '#fff2f0' : '#f6ffed' },
+                { label: '可申请额度', value: record.dealerCredit.applyableQuota, color: record.dealerCredit.applyableQuota < 0 ? '#ff4d4f' : '#1890ff', bg: record.dealerCredit.applyableQuota < 0 ? '#fff2f0' : '#e6f7ff' },
+              ].map((item) => (
+                <div key={item.label} style={{
+                  flex: 1, padding: '16px 20px', borderRadius: 12, background: item.bg,
+                  textAlign: 'center',
+                }}>
+                  <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 8 }}>{item.label}</div>
+                  <div style={{ fontSize: 24, fontWeight: 700, fontFamily: "'DM Sans', monospace", color: item.color }}>
+                    {item.value.toFixed(2)}
+                    <span style={{ fontSize: 13, fontWeight: 400, color: '#8c8c8c', marginLeft: 2 }}>万</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Descriptions column={2} size="small" labelStyle={{ color: '#8c8c8c', fontSize: 13 }} contentStyle={{ fontSize: 13 }}>
+              <Descriptions.Item label="门店名称">{record.dealerCredit.storeName}</Descriptions.Item>
+              <Descriptions.Item label="本次采购占用">
+                <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 600, color: '#1890ff' }}>
+                  {record.dealerCredit.currentPurchaseAmount.toFixed(2)}万
+                </span>
+              </Descriptions.Item>
+            </Descriptions>
+            {record.dealerCredit.applyableQuota < 0 && (
+              <Alert
+                type="error"
+                showIcon
+                icon={<WarningOutlined />}
+                message="额度预警"
+                description="可申请额度为负数，请谨慎审批"
+                style={{ marginTop: 12, borderRadius: 8 }}
+              />
+            )}
           </div>
         </div>
       )}

@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   ShoppingCart, Package, DollarSign, Warehouse, TrendingUp,
   FileText, Settings, Users, Monitor, ChevronLeft, ChevronRight,
-  Bell, Search, LayoutGrid,
+  Bell, Search, LayoutGrid, ClipboardCheck,
 } from 'lucide-react'
 import '../pc.css'
 
@@ -13,7 +13,8 @@ const menuGroups = [
     items: [
       { key: '/pc/purchase', icon: ShoppingCart, label: '采购管理' },
       { key: '/pc/sales', icon: TrendingUp, label: '销售管理' },
-      { key: '/pc/inventory', icon: Warehouse, label: '库存监管' },
+      { key: '/pc/inventory', icon: Warehouse, label: '库存管理' },
+      { key: '/pc/registration', icon: ClipboardCheck, label: '签注管理' },
       { key: '/pc/wholesale', icon: Package, label: '批售管理' },
     ],
   },

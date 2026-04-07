@@ -41,7 +41,7 @@ export default function TenantDetailPC() {
   const dealerColumns: ColumnsType<Dealer> = [
     { title: '车商编号', dataIndex: 'id', key: 'id', width: 100, render: (v: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 600, fontSize: 13 }}>{v}</span> },
     { title: '车商名称', dataIndex: 'name', key: 'name', width: 150, render: (n: string) => <span style={{ fontWeight: 500 }}>{n}</span> },
-    { title: '所属门店', dataIndex: 'storeName', key: 'storeName', width: 120 },
+    { title: '门店身份', dataIndex: 'assignedStoreName', key: 'assignedStoreName', width: 120 },
     { title: '联系人', dataIndex: 'contact', key: 'contact', width: 90 },
     { title: '联系电话', dataIndex: 'phone', key: 'phone', width: 130, render: (p: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 13 }}>{p}</span> },
     {

@@ -742,12 +742,49 @@ export default function PurchaseCreatePC() {
 
                 <Divider style={{ margin: '8px 0 16px' }} />
                 <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 16 }}>银行卡信息</div>
-                <Row gutter={24}>
-                  <Col span={8}><Form.Item label="开户名"><Input value="自动带入收款人姓名" disabled style={{ color: '#bfbfbf' }} /></Form.Item></Col>
-                  <Col span={8}><Form.Item label="银行卡号" name="payeeCardNo" rules={[{ required: true }]}><Input placeholder="请输入银行卡号" /></Form.Item></Col>
-                  <Col span={8}><Form.Item label="所属银行" name="payeeBank" rules={[{ required: true }]}><Input placeholder="请输入所属银行" /></Form.Item></Col>
-                  <Col span={8}><Form.Item label="银行预留手机" name="payeePhone"><Input placeholder="银行预留手机号" /></Form.Item></Col>
-                </Row>
+                {payeeType === '个体工商户' ? (
+                  <Row gutter={24}>
+                    <Col span={8}>
+                      <Form.Item label="银行卡类型" name="payeeNonOwnerIndivPayMode" initialValue="法人名下银行卡" rules={[{ required: true }]}>
+                        <Select options={[{ value: '法人名下银行卡', label: '法人名下银行卡' }, { value: '对公账户银行卡', label: '对公账户银行卡' }]} onChange={(v) => setPayeeIndivPayMode(v)} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                      <Form.Item label="账户类型" name="payeeNonOwnerAccountType" initialValue="他行个人账户" rules={[{ required: true }]}>
+                        <Select options={payeeIndivPayMode === '法人名下银行卡'
+                          ? [{ value: '他行个人账户', label: '他行个人账户' }, { value: '中信个人账户', label: '中信个人账户' }]
+                          : [{ value: '他行企业账户', label: '他行企业账户' }, { value: '中信企业账户', label: '中信企业账户' }]
+                        } />
+                      </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                      <Form.Item label="开户名">
+                        <Input value={payeeIndivPayMode === '法人名下银行卡' ? '自动带入法人姓名' : '自动带入企业名称'} disabled style={{ color: '#bfbfbf' }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={8}><Form.Item label="银行卡号" name="payeeCardNo" rules={[{ required: true }]}><Input placeholder="请输入银行卡号" /></Form.Item></Col>
+                    <Col span={8}><Form.Item label="银行名称" name="payeeBank" rules={[{ required: true }]}><Input placeholder="请选择银行" /></Form.Item></Col>
+                    {payeeIndivPayMode === '法人名下银行卡' && (
+                      <Col span={8}><Form.Item label="银行预留手机" name="payeePhone" rules={[{ required: true }]}><Input placeholder="银行预留手机号" /></Form.Item></Col>
+                    )}
+                  </Row>
+                ) : payeeType === '企业' ? (
+                  <>
+                    <Row gutter={24}>
+                      <Col span={8}><Form.Item label="开户名"><Input value="自动带入企业名称" disabled style={{ color: '#bfbfbf' }} /></Form.Item></Col>
+                      <Col span={8}><Form.Item label="对公账号" name="payeeCardNo" rules={[{ required: true }]}><Input placeholder="请输入对公账号" /></Form.Item></Col>
+                      <Col span={8}><Form.Item label="所属银行" name="payeeBank" rules={[{ required: true }]}><Input placeholder="请输入所属银行" /></Form.Item></Col>
+                    </Row>
+                    <Alert type="info" showIcon icon={<InfoCircleOutlined />} message="系统会自动向该对公账户转入0.01元用于验证账号有效性" style={{ marginTop: 8 }} />
+                  </>
+                ) : (
+                  <Row gutter={24}>
+                    <Col span={8}><Form.Item label="开户名"><Input value="自动带入收款人姓名" disabled style={{ color: '#bfbfbf' }} /></Form.Item></Col>
+                    <Col span={8}><Form.Item label="银行卡号" name="payeeCardNo" rules={[{ required: true }]}><Input placeholder="请输入银行卡号" /></Form.Item></Col>
+                    <Col span={8}><Form.Item label="所属银行" name="payeeBank" rules={[{ required: true }]}><Input placeholder="请输入所属银行" /></Form.Item></Col>
+                    <Col span={8}><Form.Item label="银行预留手机" name="payeePhone" rules={[{ required: true }]}><Input placeholder="银行预留手机号" /></Form.Item></Col>
+                  </Row>
+                )}
               </>
             )}
           </Form>

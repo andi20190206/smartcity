@@ -11,8 +11,8 @@ const sections: { title: string; items: Item[] }[] = [
   { title: '采销工具', items: [
     { icon: ShoppingCart, label: '车辆采购', path: '/purchase/create', badge: 0, color: '#FF3B30', bg: 'rgba(255,59,48,0.08)' },
     { icon: ClipboardList, label: '采购列表', path: '/purchase', badge: 3, color: '#FF9500', bg: 'rgba(255,149,0,0.08)' },
-    { icon: DollarSign, label: '车辆销售', path: '/dealer', badge: 0, color: '#34C759', bg: 'rgba(52,199,89,0.08)' },
-    { icon: BarChart3, label: '销售列表', path: '/dealer', badge: 0, color: '#007AFF', bg: 'rgba(0,122,255,0.08)' },
+    { icon: DollarSign, label: '车辆销售', path: '/sales/create', badge: 0, color: '#34C759', bg: 'rgba(52,199,89,0.08)' },
+    { icon: BarChart3, label: '销售列表', path: '/sales', badge: 0, color: '#007AFF', bg: 'rgba(0,122,255,0.08)' },
   ]},
   { title: '车辆管理', items: [
     { icon: Package, label: '待入库', path: '/dealer', badge: 5, color: '#FF9500', bg: 'rgba(255,149,0,0.08)' },

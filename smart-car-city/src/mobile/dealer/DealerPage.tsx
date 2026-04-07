@@ -22,13 +22,13 @@ const sections: { title: string; items: Item[] }[] = [
     { icon: CircleCheck, label: '已售', path: '/dealer', badge: 0, color: '#8E8E93', bg: 'rgba(0,0,0,0.04)' },
   ]},
   { title: '用车工具', items: [
-    { icon: KeyRound, label: '用车申请', path: '/dealer', badge: 0, color: '#007AFF', bg: 'rgba(0,122,255,0.08)' },
-    { icon: FileText, label: '用车列表', path: '/dealer', badge: 0, color: '#34C759', bg: 'rgba(52,199,89,0.08)' },
+    { icon: KeyRound, label: '用车申请', path: '/vehicle-use/apply', badge: 0, color: '#007AFF', bg: 'rgba(0,122,255,0.08)' },
+    { icon: FileText, label: '用车列表', path: '/vehicle-use', badge: 0, color: '#34C759', bg: 'rgba(52,199,89,0.08)' },
   ]},
   { title: '审批', items: [
-    { icon: PenLine, label: '采购审批', path: '/dealer', badge: 2, color: '#FF3B30', bg: 'rgba(255,59,48,0.08)' },
-    { icon: FilePen, label: '销售审批', path: '/dealer', badge: 1, color: '#FF9500', bg: 'rgba(255,149,0,0.08)' },
-    { icon: CarFront, label: '用车审批', path: '/dealer', badge: 0, color: '#AF52DE', bg: 'rgba(175,82,222,0.08)' },
+    { icon: PenLine, label: '采购审批', path: '/approval', badge: 2, color: '#FF3B30', bg: 'rgba(255,59,48,0.08)' },
+    { icon: FilePen, label: '销售审批', path: '/approval', badge: 1, color: '#FF9500', bg: 'rgba(255,149,0,0.08)' },
+    { icon: CarFront, label: '用车审批', path: '/approval', badge: 0, color: '#AF52DE', bg: 'rgba(175,82,222,0.08)' },
   ]},
 ]
 

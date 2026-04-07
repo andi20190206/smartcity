@@ -1,7 +1,6 @@
-import { Upload, Store, Wrench, Search, Globe, Bell, MapPin, Flame, Car, Key, FileText, Edit, File, Truck } from 'lucide-react'
+import { Upload, Store, Wrench, Search, Globe, Bell, MapPin, Flame, Car } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { getCarImage, handleImgError } from '../../shared/constants/carImages'
-import { mockApprovals } from '../../shared/mock/approvalMock'
 
 const entries = [
   { icon: Upload, label: '发布车源', bg: '#FF3B30', bgSoft: 'rgba(255,59,48,0.08)' },
@@ -71,69 +70,6 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* 用车工具 */}
-      <div className="anim d2" style={{ margin: '0 16px 4px', fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)' }}>用车工具</div>
-      <div className="anim d2" style={{
-        margin: '6px 16px 12px', padding: '18px 16px', borderRadius: 16,
-        background: '#fff', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border)',
-        display: 'flex', gap: 24,
-      }}>
-        {[
-          { icon: Key, label: '用车申请', path: '/vehicle-use/apply', color: '#007AFF', bg: 'rgba(0,122,255,0.08)' },
-          { icon: FileText, label: '用车列表', path: '/vehicle-use', color: '#34C759', bg: 'rgba(52,199,89,0.08)' },
-        ].map((item) => (
-          <div key={item.label} onClick={() => navigate(item.path)} style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer',
-          }}>
-            <div style={{ width: 50, height: 50, borderRadius: 14, background: item.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <item.icon size={24} color={item.color} strokeWidth={1.8} />
-            </div>
-            <span style={{ fontSize: 12, color: 'var(--text-1)', fontWeight: 500 }}>{item.label}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* 审批 */}
-      <div className="anim d3" style={{ margin: '0 16px 4px', fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)' }}>审批</div>
-      <div className="anim d3" style={{
-        margin: '6px 16px 12px', padding: '18px 16px', borderRadius: 16,
-        background: '#fff', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border)',
-        display: 'flex', gap: 24,
-      }}>
-        {(() => {
-          const pendingApprovals = mockApprovals.filter((a) => a.status === 'pending' || a.status === 'approving')
-          const purchaseCount = pendingApprovals.filter((a) => a.type === 'purchase').length
-          const salesCount = pendingApprovals.filter((a) => a.type === 'sales_sign').length
-          const vehicleUseCount = pendingApprovals.filter((a) => a.type === 'vehicle_use').length
-          return [
-            { icon: Edit, label: '采购审批', color: '#FF3B30', bg: 'rgba(255,59,48,0.08)', badge: purchaseCount },
-            { icon: File, label: '销售审批', color: '#FF9500', bg: 'rgba(255,149,0,0.08)', badge: salesCount },
-            { icon: Truck, label: '用车审批', color: '#AF52DE', bg: 'rgba(175,82,222,0.08)', badge: vehicleUseCount },
-          ].map((item) => (
-            <div key={item.label} onClick={() => navigate('/approval')} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer', position: 'relative',
-            }}>
-              <div style={{ position: 'relative' }}>
-                <div style={{ width: 50, height: 50, borderRadius: 14, background: item.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <item.icon size={24} color={item.color} strokeWidth={1.8} />
-                </div>
-                {item.badge > 0 && (
-                  <div style={{
-                    position: 'absolute', top: -4, right: -4,
-                    minWidth: 18, height: 18, borderRadius: 9,
-                    background: '#FF3B30', color: '#fff',
-                    fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-num)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '0 4px', border: '2px solid #fff',
-                  }}>{item.badge}</div>
-                )}
-              </div>
-              <span style={{ fontSize: 12, color: 'var(--text-1)', fontWeight: 500 }}>{item.label}</span>
-            </div>
-          ))
-        })()}
       </div>
 
       {/* Recommend */}

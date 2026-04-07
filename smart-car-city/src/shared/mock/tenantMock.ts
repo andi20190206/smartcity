@@ -94,12 +94,12 @@ export const mockCompanies: DealerCompany[] = [
 ]
 
 export const mockStores: Store[] = [
-  { id: 'ST001', name: '天河旗舰店', companyId: 'DC20260301001', companyName: '广州恒达汽车经销有限公司', address: '广州市天河区黄埔大道西120号', contact: '周小明', phone: '13811138011', warehouseName: '天河仓A区', dealerCount: 5, createTime: '2026-01-16 10:00' },
-  { id: 'ST002', name: '番禺分店', companyId: 'DC20260301001', companyName: '广州恒达汽车经销有限公司', address: '广州市番禺区市桥街道大北路50号', contact: '吴丽', phone: '13811138012', warehouseName: '番禺仓B区', dealerCount: 4, createTime: '2026-01-18 14:00' },
-  { id: 'ST003', name: '白云分店', companyId: 'DC20260301001', companyName: '广州恒达汽车经销有限公司', address: '广州市白云区白云大道北100号', contact: '孙强', phone: '13811138013', warehouseName: '白云仓C区', dealerCount: 3, createTime: '2026-02-01 09:00' },
-  { id: 'ST004', name: '南山旗舰店', companyId: 'DC20260301002', companyName: '深圳鹏程汽车贸易有限公司', address: '深圳市南山区科技园南路88号', contact: '郑华', phone: '13911139011', warehouseName: '南山仓', dealerCount: 5, createTime: '2026-01-22 10:00' },
-  { id: 'ST005', name: '宝安分店', companyId: 'DC20260301002', companyName: '深圳鹏程汽车贸易有限公司', address: '深圳市宝安区新安街道创业路30号', contact: '冯磊', phone: '13911139012', warehouseName: '宝安仓', dealerCount: 3, createTime: '2026-02-10 11:00' },
-  { id: 'ST006', name: '顺德总店', companyId: 'DC20260301003', companyName: '佛山顺德汽车城有限公司', address: '佛山市顺德区大良街道新城路66号', contact: '何敏', phone: '13711137011', warehouseName: '顺德仓', dealerCount: 5, createTime: '2026-02-06 09:00' },
+  { id: 'ST001', name: '天河旗舰店', companyId: 'DC20260301001', companyName: '广州恒达汽车经销有限公司', address: '广州市天河区黄埔大道西120号', contact: '周小明', phone: '13811138011', warehouseName: '天河仓A区', createTime: '2026-01-16 10:00' },
+  { id: 'ST002', name: '番禺分店', companyId: 'DC20260301001', companyName: '广州恒达汽车经销有限公司', address: '广州市番禺区市桥街道大北路50号', contact: '吴丽', phone: '13811138012', warehouseName: '番禺仓B区', createTime: '2026-01-18 14:00' },
+  { id: 'ST003', name: '白云分店', companyId: 'DC20260301001', companyName: '广州恒达汽车经销有限公司', address: '广州市白云区白云大道北100号', contact: '孙强', phone: '13811138013', warehouseName: '白云仓C区', createTime: '2026-02-01 09:00' },
+  { id: 'ST004', name: '南山旗舰店', companyId: 'DC20260301002', companyName: '深圳鹏程汽车贸易有限公司', address: '深圳市南山区科技园南路88号', contact: '郑华', phone: '13911139011', warehouseName: '南山仓', createTime: '2026-01-22 10:00' },
+  { id: 'ST005', name: '宝安分店', companyId: 'DC20260301002', companyName: '深圳鹏程汽车贸易有限公司', address: '深圳市宝安区新安街道创业路30号', contact: '冯磊', phone: '13911139012', warehouseName: '宝安仓', createTime: '2026-02-10 11:00' },
+  { id: 'ST006', name: '顺德总店', companyId: 'DC20260301003', companyName: '佛山顺德汽车城有限公司', address: '佛山市顺德区大良街道新城路66号', contact: '何敏', phone: '13711137011', warehouseName: '顺德仓', createTime: '2026-02-06 09:00' },
 ]
 
 export const mockDealers: Dealer[] = [

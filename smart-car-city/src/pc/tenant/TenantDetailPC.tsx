@@ -34,14 +34,16 @@ export default function TenantDetailPC() {
     { title: '联系人', dataIndex: 'contact', key: 'contact', width: 100 },
     { title: '联系电话', dataIndex: 'phone', key: 'phone', width: 130, render: (p: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 13 }}>{p}</span> },
     { title: '关联仓库', dataIndex: 'warehouseName', key: 'warehouseName', width: 120 },
-    { title: '车商数', dataIndex: 'dealerCount', key: 'dealerCount', width: 80, align: 'center', render: (n: number) => <span style={{ color: '#52c41a', fontWeight: 600 }}>{n}</span> },
     { title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 160, render: (t: string) => <span style={{ fontSize: 13, color: '#8c8c8c' }}>{t}</span> },
   ]
 
   const dealerColumns: ColumnsType<Dealer> = [
     { title: '车商编号', dataIndex: 'id', key: 'id', width: 100, render: (v: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 600, fontSize: 13 }}>{v}</span> },
     { title: '车商名称', dataIndex: 'name', key: 'name', width: 150, render: (n: string) => <span style={{ fontWeight: 500 }}>{n}</span> },
-    { title: '门店身份', dataIndex: 'assignedStoreName', key: 'assignedStoreName', width: 120 },
+    {
+      title: '门店身份（系统分配）', dataIndex: 'assignedStoreName', key: 'assignedStoreName', width: 150,
+      render: (v: string) => <Tag color="blue" style={{ borderRadius: 4 }}>{v}</Tag>,
+    },
     { title: '联系人', dataIndex: 'contact', key: 'contact', width: 90 },
     { title: '联系电话', dataIndex: 'phone', key: 'phone', width: 130, render: (p: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 13 }}>{p}</span> },
     {
@@ -109,7 +111,7 @@ export default function TenantDetailPC() {
       key: 'stores',
       label: <span><ShopOutlined /> 下属门店 ({stores.length})</span>,
       children: (
-        <Table columns={storeColumns} dataSource={stores} rowKey="id" size="small" scroll={{ x: 1100 }} pagination={false} />
+        <Table columns={storeColumns} dataSource={stores} rowKey="id" size="small" scroll={{ x: 1000 }} pagination={false} />
       ),
     },
     {

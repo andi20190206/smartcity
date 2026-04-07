@@ -15,7 +15,7 @@ export interface DealerCompany {
   createTime: string
 }
 
-/** 门店 */
+/** 门店（属于经销公司，与车商是平级关系） */
 export interface Store {
   id: string
   name: string
@@ -25,7 +25,6 @@ export interface Store {
   contact: string
   phone: string
   warehouseName: string
-  dealerCount: number
   createTime: string
 }
 

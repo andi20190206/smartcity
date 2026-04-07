@@ -119,7 +119,6 @@ export default function TenantListPC() {
     { title: '联系人', dataIndex: 'contact', key: 'contact', width: 100 },
     { title: '联系电话', dataIndex: 'phone', key: 'phone', width: 130, render: (p: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 13 }}>{p}</span> },
     { title: '关联仓库', dataIndex: 'warehouseName', key: 'warehouseName', width: 120 },
-    { title: '车商数', dataIndex: 'dealerCount', key: 'dealerCount', width: 80, align: 'center', render: (n: number) => <span style={{ color: '#52c41a', fontWeight: 600 }}>{n}</span> },
     {
       title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 160,
       render: (t: string) => <span style={{ fontSize: 13, color: '#8c8c8c' }}>{t}</span>,
@@ -143,7 +142,10 @@ export default function TenantListPC() {
     { title: '车商编号', dataIndex: 'id', key: 'id', width: 100, render: (id: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 600, fontSize: 13 }}>{id}</span> },
     { title: '车商名称', dataIndex: 'name', key: 'name', width: 150, render: (n: string) => <span style={{ fontWeight: 500 }}>{n}</span> },
     { title: '所属经销公司', dataIndex: 'companyName', key: 'companyName', width: 220 },
-    { title: '门店身份', dataIndex: 'assignedStoreName', key: 'assignedStoreName', width: 120 },
+    {
+      title: '门店身份（系统分配）', dataIndex: 'assignedStoreName', key: 'assignedStoreName', width: 150,
+      render: (v: string) => <Tag color="blue" style={{ borderRadius: 4 }}>{v}</Tag>,
+    },
     { title: '联系人', dataIndex: 'contact', key: 'contact', width: 90 },
     { title: '联系电话', dataIndex: 'phone', key: 'phone', width: 130, render: (p: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 13 }}>{p}</span> },
     {
@@ -259,7 +261,7 @@ export default function TenantListPC() {
                     </Space>
                   </div>
                   <div className="table-card-body">
-                    <Table columns={storeColumns} dataSource={filteredStores} rowKey="id" size="middle" scroll={{ x: 1300 }}
+                    <Table columns={storeColumns} dataSource={filteredStores} rowKey="id" size="middle" scroll={{ x: 1200 }}
                       pagination={{ pageSize: 10, showSizeChanger: true, showQuickJumper: true, showTotal: (total) => `共 ${total} 条` }}
                     />
                   </div>

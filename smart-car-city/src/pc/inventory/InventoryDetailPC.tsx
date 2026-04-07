@@ -55,9 +55,10 @@ export default function InventoryDetailPC() {
 
   /* ---- OBD绑定弹窗 ---- */
   const [obdBindOpen, setObdBindOpen] = useState(false)
-  const [obdCode, setObdCode] = useState('')
+  const [obdCode, setObdCode] = useState<string | undefined>(undefined)
   const [obdReason, setObdReason] = useState('')
   const [obdBindResult, setObdBindResult] = useState<'success' | 'fail' | null>(null)
+  const [obdSearching, setObdSearching] = useState(false)
 
   /* ---- OBD绑定记录弹窗 ---- */
   const [obdHistoryOpen, setObdHistoryOpen] = useState(false)
@@ -91,15 +92,41 @@ export default function InventoryDetailPC() {
     }
   }
 
+  /* ---- OBD可选编码列表（模拟远程搜索） ---- */
+  const allObdOptions = [
+    { value: 'OBD-20260401-A01', label: 'OBD-20260401-A01' },
+    { value: 'OBD-20260401-A02', label: 'OBD-20260401-A02' },
+    { value: 'OBD-20260401-B01', label: 'OBD-20260401-B01' },
+    { value: 'OBD-20260401-B02', label: 'OBD-20260401-B02' },
+    { value: 'OBD-20260401-C01', label: 'OBD-20260401-C01' },
+    { value: 'OBD-20260330-A01', label: 'OBD-20260330-A01' },
+    { value: 'OBD-20260330-B03', label: 'OBD-20260330-B03' },
+    { value: 'OBD-20260328-D01', label: 'OBD-20260328-D01' },
+  ]
+  const [obdOptions, setObdOptions] = useState(allObdOptions)
+
+  const handleObdSearch = (keyword: string) => {
+    setObdSearching(true)
+    // 模拟远程搜索延迟
+    setTimeout(() => {
+      const filtered = keyword
+        ? allObdOptions.filter((o) => o.value.toLowerCase().includes(keyword.toLowerCase()))
+        : allObdOptions
+      setObdOptions(filtered)
+      setObdSearching(false)
+    }, 300)
+  }
+
   /* ---- OBD绑定 ---- */
   const openObdBind = () => {
-    setObdCode('')
+    setObdCode(undefined)
     setObdReason('')
     setObdBindResult(null)
+    setObdOptions(allObdOptions)
     setObdBindOpen(true)
   }
   const handleObdBind = () => {
-    if (!obdCode.trim()) { message.warning('请输入OBD编码'); return }
+    if (!obdCode) { message.warning('请选择OBD编码'); return }
     // 模拟绑定结果
     const result = Math.random() > 0.5 ? 'success' : 'fail'
     setObdBindResult(result)
@@ -393,10 +420,16 @@ export default function InventoryDetailPC() {
           <Form layout="horizontal" labelCol={{ span: 4 }} wrapperCol={{ span: 19 }}>
             <Form.Item label="OBD编码" style={{ marginBottom: 12 }}>
               <Space>
-                <Input
-                  placeholder="请输入"
+                <Select
+                  showSearch
+                  placeholder="请搜索选择OBD编码"
                   value={obdCode}
-                  onChange={(e) => { setObdCode(e.target.value); setObdBindResult(null) }}
+                  onChange={(v) => { setObdCode(v); setObdBindResult(null) }}
+                  onSearch={handleObdSearch}
+                  filterOption={false}
+                  loading={obdSearching}
+                  notFoundContent={obdSearching ? '搜索中...' : '无匹配设备'}
+                  options={obdOptions}
                   style={{ width: 240 }}
                 />
                 {obdBindResult === 'fail' && (

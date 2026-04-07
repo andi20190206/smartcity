@@ -152,6 +152,129 @@ export default function ApprovalDetail() {
           </div>
         ))}
       </div>
+      {/* 垫款审批专用：车辆信息卡片 */}
+      {record.type === 'advance' && record.advanceDetail && (
+        <>
+          <div className="section-hd">车辆信息</div>
+          <div className="anim d2" style={{
+            margin: '0 16px 12px', background: '#fff', borderRadius: 14,
+            border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden',
+          }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-0)', marginBottom: 4 }}>{record.advanceDetail.brandModel}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 4 }}>{record.advanceDetail.registerDate} | {record.advanceDetail.condition}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--brand)' }}>{record.advanceDetail.plateNo}</div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', borderBottom: '1px solid var(--border)' }}>
+              {[
+                { label: '车辆状态', value: record.advanceDetail.vehicleStatus },
+                { label: '在门店库', value: record.advanceDetail.warehouseInfo },
+                { label: '过户状态', value: record.advanceDetail.transferStatus },
+                { label: '车款', value: record.advanceDetail.paymentType },
+              ].map((item) => (
+                <div key={item.label} style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: 10, color: 'var(--text-2)', marginBottom: 4 }}>{item.label}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-0)' }}>{item.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="section-hd">金额信息</div>
+          <div className="anim d2" style={{
+            margin: '0 16px 12px', background: '#fff', borderRadius: 14,
+            border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)',
+          }}>
+            {[
+              { label: '合同价：', value: `${record.advanceDetail.contractPrice.toLocaleString()}元`, color: 'var(--brand)', bold: true },
+              { label: '申请垫款：', value: `${record.advanceDetail.applyAdvance.toLocaleString()}元`, color: 'var(--brand)', bold: true },
+              ...(record.advanceDetail.regionTotalAdvance ? [{ label: '区域总垫身', value: record.advanceDetail.regionTotalAdvance, color: 'var(--text-0)', bold: false }] : []),
+              { label: '成交价', value: `${record.advanceDetail.dealPrice.toLocaleString()}元`, color: 'var(--text-0)', bold: false },
+            ].map((item, i, arr) => (
+              <div key={item.label} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '12px 16px', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+              }}>
+                <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{item.label}</span>
+                <span style={{ fontSize: item.bold ? 15 : 13, fontWeight: item.bold ? 700 : 500, fontFamily: 'var(--font-num)', color: item.color }}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="section-hd">收款人信息</div>
+          <div className="anim d3" style={{
+            margin: '0 16px 12px', background: '#fff', borderRadius: 14,
+            border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)',
+          }}>
+            {[
+              { icon: <User size={14} color="var(--text-2)" />, label: '收款人', value: record.advanceDetail.sellerName },
+              { icon: <Building2 size={14} color="var(--text-2)" />, label: '开户行', value: record.advanceDetail.sellerBank },
+              { icon: <CreditCard size={14} color="var(--text-2)" />, label: '银行卡号', value: record.advanceDetail.sellerCardNo },
+              ...(record.advanceDetail.sellerPhone ? [{ icon: <User size={14} color="var(--text-2)" />, label: '手机号', value: record.advanceDetail.sellerPhone }] : []),
+            ].map((item, i, arr) => (
+              <div key={item.label} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '12px 16px', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {item.icon}
+                  <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{item.label}</span>
+                </div>
+                <span style={{ fontSize: 13, color: 'var(--text-0)', fontWeight: 500, maxWidth: '55%', textAlign: 'right', wordBreak: 'break-all' }}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="section-hd">门店额度信息</div>
+          <div className="anim d3" style={{
+            margin: '0 16px 12px', background: '#fff', borderRadius: 14,
+            border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)',
+          }}>
+            {[
+              { label: '待审批垫款：', value: `${record.advanceDetail.pendingAdvance.toLocaleString()}元` },
+              { label: '可申请额度：', value: `${record.advanceDetail.applyableQuota.toLocaleString()}元` },
+              { label: '可用合作款项：', value: `${record.advanceDetail.availableDeposit.toLocaleString()}元`, warn: record.advanceDetail.availableDeposit < 0 },
+              { label: '可用额度：', value: `${record.advanceDetail.availableQuota.toLocaleString()}元` },
+            ].map((item, i, arr) => (
+              <div key={item.label} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '12px 16px', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+              }}>
+                <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{item.label}</span>
+                <span style={{
+                  fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-num)',
+                  color: item.warn ? 'var(--red)' : 'var(--text-0)',
+                }}>{item.value}</span>
+              </div>
+            ))}
+            {record.advanceDetail.availableDeposit < 0 && (
+              <div style={{
+                margin: '0 12px 10px', padding: '8px 10px', borderRadius: 8,
+                background: 'var(--red-bg)', display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <AlertTriangle size={13} color="var(--red)" />
+                <span style={{ fontSize: 12, color: 'var(--red)' }}>!!本次申请已超实缴合作款项</span>
+              </div>
+            )}
+            <div style={{
+              margin: '0 12px 10px', padding: '10px 12px', borderRadius: 8,
+              background: 'rgba(0,0,0,0.02)', border: '1px solid var(--border)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+                <HelpCircle size={12} color="var(--text-2)" />
+                <span style={{ fontSize: 11, color: 'var(--text-2)', fontWeight: 600 }}>额度说明</span>
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.8 }}>
+                <div>待审批垫款：门店所有待审批垫款汇总求和</div>
+                <div>可用额度：最大额度 - 未销售回款车辆的累计在途金额 - 待审批垫款</div>
+                <div>可用合作款项：合作款项 - 未签注车辆的累计在途金额 - 待审批垫款</div>
+                <div>可申请额度：≤ 可用额度</div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* 车辆定价信息 - 仅采购审批，紧跟基本信息 */}
       {record.type === 'purchase' && record.vehiclePricingList && record.vehiclePricingList.length > 0 && (
         <>

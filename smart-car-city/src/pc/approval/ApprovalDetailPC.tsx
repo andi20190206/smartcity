@@ -143,6 +143,90 @@ export default function ApprovalDetailPC() {
         </div>
       </div>
 
+      {/* 垫款审批专用：车辆信息 + 金额 + 收款人 + 额度 */}
+      {record.type === 'advance' && record.advanceDetail && (
+        <>
+          <div className="detail-section">
+            <div className="detail-section-title"><CarOutlined /> 车辆信息</div>
+            <div className="detail-section-body">
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, color: '#1a1a2e', marginBottom: 4 }}>{record.advanceDetail.brandModel}</div>
+                <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 4 }}>{record.advanceDetail.registerDate} | {record.advanceDetail.condition}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#E8352E' }}>{record.advanceDetail.plateNo}</div>
+              </div>
+              <Descriptions column={4} size="small" bordered labelStyle={{ color: '#8c8c8c', fontSize: 12, textAlign: 'center' }} contentStyle={{ fontSize: 12, fontWeight: 600, textAlign: 'center' }}>
+                <Descriptions.Item label="车辆状态">{record.advanceDetail.vehicleStatus}</Descriptions.Item>
+                <Descriptions.Item label="在门店库">{record.advanceDetail.warehouseInfo}</Descriptions.Item>
+                <Descriptions.Item label="过户状态">{record.advanceDetail.transferStatus}</Descriptions.Item>
+                <Descriptions.Item label="车款">{record.advanceDetail.paymentType}</Descriptions.Item>
+              </Descriptions>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div className="detail-section">
+              <div className="detail-section-title"><DollarOutlined /> 金额信息</div>
+              <div className="detail-section-body">
+                <Descriptions column={1} size="small" labelStyle={{ color: '#8c8c8c', fontSize: 13 }} contentStyle={{ fontSize: 14 }}>
+                  <Descriptions.Item label="合同价">
+                    <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 700, color: '#E8352E', fontSize: 16 }}>{record.advanceDetail.contractPrice.toLocaleString()}元</span>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="申请垫款">
+                    <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 700, color: '#E8352E', fontSize: 16 }}>{record.advanceDetail.applyAdvance.toLocaleString()}元</span>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="成交价">{record.advanceDetail.dealPrice.toLocaleString()}元</Descriptions.Item>
+                </Descriptions>
+              </div>
+            </div>
+
+            <div className="detail-section">
+              <div className="detail-section-title"><UserOutlined /> 收款人信息</div>
+              <div className="detail-section-body">
+                <Descriptions column={1} size="small" labelStyle={{ color: '#8c8c8c', fontSize: 13 }} contentStyle={{ fontSize: 13 }}>
+                  <Descriptions.Item label="收款人">{record.advanceDetail.sellerName}</Descriptions.Item>
+                  <Descriptions.Item label="开户行">{record.advanceDetail.sellerBank}</Descriptions.Item>
+                  <Descriptions.Item label="银行卡号"><span style={{ fontFamily: "'DM Sans', monospace" }}>{record.advanceDetail.sellerCardNo}</span></Descriptions.Item>
+                  {record.advanceDetail.sellerPhone && <Descriptions.Item label="手机号">{record.advanceDetail.sellerPhone}</Descriptions.Item>}
+                </Descriptions>
+              </div>
+            </div>
+          </div>
+
+          <div className="detail-section">
+            <div className="detail-section-title"><BankOutlined /> 门店额度信息</div>
+            <div className="detail-section-body">
+              <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+                {[
+                  { label: '待审批垫款', value: record.advanceDetail.pendingAdvance, color: '#fa8c16', bg: '#fff7e6' },
+                  { label: '可申请额度', value: record.advanceDetail.applyableQuota, color: '#1890ff', bg: '#e6f7ff' },
+                  { label: '可用合作款项', value: record.advanceDetail.availableDeposit, color: record.advanceDetail.availableDeposit < 0 ? '#ff4d4f' : '#52c41a', bg: record.advanceDetail.availableDeposit < 0 ? '#fff2f0' : '#f6ffed' },
+                  { label: '可用额度', value: record.advanceDetail.availableQuota, color: '#1a1a2e', bg: '#f5f5f5' },
+                ].map((item) => (
+                  <div key={item.label} style={{ flex: 1, padding: '14px 12px', borderRadius: 10, background: item.bg, textAlign: 'center' }}>
+                    <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 6 }}>{item.label}</div>
+                    <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'DM Sans', monospace", color: item.color }}>{item.value.toLocaleString()}<span style={{ fontSize: 11, fontWeight: 400, color: '#8c8c8c' }}>元</span></div>
+                  </div>
+                ))}
+              </div>
+              {record.advanceDetail.availableDeposit < 0 && (
+                <Alert type="error" showIcon icon={<WarningOutlined />} message="本次申请已超实缴合作款项" style={{ marginBottom: 12, borderRadius: 8 }} />
+              )}
+              <Alert type="info" showIcon icon={<InfoCircleOutlined />} style={{ borderRadius: 8 }}
+                message="额度说明"
+                description={
+                  <div style={{ fontSize: 12, lineHeight: 2 }}>
+                    <div>待审批垫款：门店所有待审批垫款汇总求和</div>
+                    <div>可用额度：最大额度 - 未销售回款车辆的累计在途金额 - 待审批垫款</div>
+                    <div>可用合作款项：合作款项 - 未签注车辆的累计在途金额 - 待审批垫款</div>
+                    <div>可申请额度：≤ 可用额度</div>
+                  </div>
+                }
+              />
+            </div>
+          </div>
+        </>
+      )}
+
       {/* 车辆定价信息 - 仅采购审批，紧跟审批摘要 */}
       {record.type === 'purchase' && record.vehiclePricingList && record.vehiclePricingList.length > 0 && (
         <div className="detail-section">

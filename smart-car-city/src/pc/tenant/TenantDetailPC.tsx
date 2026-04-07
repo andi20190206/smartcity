@@ -2,20 +2,19 @@ import { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Tabs, Tag, Table, Button, Space, Empty, Descriptions, Timeline } from 'antd'
 import {
-  ArrowLeftOutlined, BankOutlined, ShopOutlined, UserOutlined,
+  ArrowLeftOutlined, BankOutlined, ShopOutlined,
   ClockCircleOutlined, CheckCircleOutlined, PhoneOutlined,
-  EnvironmentOutlined, SafetyCertificateOutlined, WalletOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { mockCompanies, mockStores, mockDealers } from '../../shared/mock/tenantMock'
+import { mockCompanies, mockDealers } from '../../shared/mock/tenantMock'
 import { tenantStatusColorMap, tenantStatusTextMap } from '../../shared/constants/tenantStatusMap'
-import type { Store, Dealer } from '../../shared/types/Tenant.types'
+import type { Dealer } from '../../shared/types/Tenant.types'
 
 export default function TenantDetailPC() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const company = useMemo(() => mockCompanies.find((c) => c.id === id), [id])
-  const stores = useMemo(() => mockStores.filter((s) => s.companyId === id), [id])
   const dealers = useMemo(() => mockDealers.filter((d) => d.companyId === id), [id])
 
   if (!company) {
@@ -27,23 +26,8 @@ export default function TenantDetailPC() {
     )
   }
 
-  const storeColumns: ColumnsType<Store> = [
-    { title: '门店编号', dataIndex: 'id', key: 'id', width: 100, render: (v: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 600, fontSize: 13 }}>{v}</span> },
-    { title: '门店名称', dataIndex: 'name', key: 'name', width: 160, render: (n: string) => <span style={{ fontWeight: 500 }}>{n}</span> },
-    { title: '门店地址', dataIndex: 'address', key: 'address', width: 300, ellipsis: true },
-    { title: '联系人', dataIndex: 'contact', key: 'contact', width: 100 },
-    { title: '联系电话', dataIndex: 'phone', key: 'phone', width: 130, render: (p: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 13 }}>{p}</span> },
-    { title: '关联仓库', dataIndex: 'warehouseName', key: 'warehouseName', width: 120 },
-    { title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 160, render: (t: string) => <span style={{ fontSize: 13, color: '#8c8c8c' }}>{t}</span> },
-  ]
-
   const dealerColumns: ColumnsType<Dealer> = [
-    { title: '车商编号', dataIndex: 'id', key: 'id', width: 100, render: (v: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 600, fontSize: 13 }}>{v}</span> },
-    { title: '车商名称', dataIndex: 'name', key: 'name', width: 150, render: (n: string) => <span style={{ fontWeight: 500 }}>{n}</span> },
-    {
-      title: '门店身份（系统分配）', dataIndex: 'assignedStoreName', key: 'assignedStoreName', width: 150,
-      render: (v: string) => <Tag color="blue" style={{ borderRadius: 4 }}>{v}</Tag>,
-    },
+    { title: '门店全称', dataIndex: 'assignedStoreName', key: 'assignedStoreName', width: 160, render: (v: string) => <span style={{ fontWeight: 600 }}>{v}</span> },
     { title: '联系人', dataIndex: 'contact', key: 'contact', width: 90 },
     { title: '联系电话', dataIndex: 'phone', key: 'phone', width: 130, render: (p: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 13 }}>{p}</span> },
     {
@@ -61,7 +45,7 @@ export default function TenantDetailPC() {
       ),
     },
     {
-      title: '状态', dataIndex: 'status', key: 'status', width: 90,
+      title: '门店状态', dataIndex: 'status', key: 'status', width: 90,
       render: (s: string) => <Tag color={tenantStatusColorMap[s]} style={{ borderRadius: 4 }}>{tenantStatusTextMap[s]}</Tag>,
     },
     { title: '挂靠时间', dataIndex: 'createTime', key: 'createTime', width: 160, render: (t: string) => <span style={{ fontSize: 13, color: '#8c8c8c' }}>{t}</span> },
@@ -90,8 +74,7 @@ export default function TenantDetailPC() {
               { label: '经营地址', value: company.address, span: 2 },
               { label: '钱包账户', value: company.walletAccount || '未开通', mono: true },
               { label: '入驻时间', value: company.createTime },
-              { label: '门店数量', value: `${company.storeCount} 家` },
-              { label: '车商数量', value: `${company.dealerCount} 人` },
+              { label: '门店数量', value: `${company.dealerCount} 家` },
             ].map((item, i) => (
               <div key={item.label} style={{
                 padding: '14px 18px',
@@ -108,17 +91,10 @@ export default function TenantDetailPC() {
       ),
     },
     {
-      key: 'stores',
-      label: <span><ShopOutlined /> 下属门店 ({stores.length})</span>,
-      children: (
-        <Table columns={storeColumns} dataSource={stores} rowKey="id" size="small" scroll={{ x: 1000 }} pagination={false} />
-      ),
-    },
-    {
       key: 'dealers',
-      label: <span><UserOutlined /> 下属车商 ({dealers.length})</span>,
+      label: <span><ShopOutlined /> 门店管理 ({dealers.length})</span>,
       children: (
-        <Table columns={dealerColumns} dataSource={dealers} rowKey="id" size="small" scroll={{ x: 1200 }} pagination={false} />
+        <Table columns={dealerColumns} dataSource={dealers} rowKey="id" size="small" scroll={{ x: 1000 }} pagination={false} />
       ),
     },
     {
@@ -161,15 +137,9 @@ export default function TenantDetailPC() {
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ display: 'flex', gap: 24 }}>
-            <div>
-              <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 4 }}>门店</div>
-              <div style={{ fontFamily: "'DM Sans', monospace", fontSize: 28, fontWeight: 700, color: '#1677ff', lineHeight: 1 }}>{company.storeCount}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 4 }}>车商</div>
-              <div style={{ fontFamily: "'DM Sans', monospace", fontSize: 28, fontWeight: 700, color: '#52c41a', lineHeight: 1 }}>{company.dealerCount}</div>
-            </div>
+          <div>
+            <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 4 }}>门店</div>
+            <div style={{ fontFamily: "'DM Sans', monospace", fontSize: 28, fontWeight: 700, color: '#1677ff', lineHeight: 1 }}>{company.dealerCount}</div>
           </div>
         </div>
       </div>

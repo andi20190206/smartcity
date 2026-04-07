@@ -5,11 +5,11 @@ import type { ColumnsType } from 'antd/es/table'
 import {
   SearchOutlined, PlusOutlined, ReloadOutlined, ExportOutlined,
   EyeOutlined, EditOutlined, StopOutlined, CheckCircleOutlined,
-  MoreOutlined, BankOutlined, ShopOutlined, UserOutlined,
+  MoreOutlined, BankOutlined, ShopOutlined,
 } from '@ant-design/icons'
-import { mockCompanies, mockStores, mockDealers } from '../../shared/mock/tenantMock'
+import { mockCompanies, mockDealers } from '../../shared/mock/tenantMock'
 import { tenantStatusColorMap, tenantStatusTextMap } from '../../shared/constants/tenantStatusMap'
-import type { DealerCompany, Store, Dealer } from '../../shared/types/Tenant.types'
+import type { DealerCompany, Dealer } from '../../shared/types/Tenant.types'
 
 export default function TenantListPC() {
   const navigate = useNavigate()
@@ -99,53 +99,22 @@ export default function TenantListPC() {
     },
   ]
 
-  // ===== 门店 =====
-  const filteredStores = useMemo(() => {
-    return mockStores.filter((s) => {
-      if (companyFilter && s.companyId !== companyFilter) return false
-      if (searchText) {
-        const q = searchText.toLowerCase()
-        return s.name.toLowerCase().includes(q) || s.companyName.toLowerCase().includes(q) || s.contact.includes(q)
-      }
-      return true
-    })
-  }, [searchText, companyFilter])
-
-  const storeColumns: ColumnsType<Store> = [
-    { title: '门店编号', dataIndex: 'id', key: 'id', width: 100, render: (id: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 600, fontSize: 13 }}>{id}</span> },
-    { title: '门店名称', dataIndex: 'name', key: 'name', width: 160, render: (n: string) => <span style={{ fontWeight: 500 }}>{n}</span> },
-    { title: '所属经销公司', dataIndex: 'companyName', key: 'companyName', width: 260 },
-    { title: '门店地址', dataIndex: 'address', key: 'address', width: 300, ellipsis: true },
-    { title: '联系人', dataIndex: 'contact', key: 'contact', width: 100 },
-    { title: '联系电话', dataIndex: 'phone', key: 'phone', width: 130, render: (p: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 13 }}>{p}</span> },
-    { title: '关联仓库', dataIndex: 'warehouseName', key: 'warehouseName', width: 120 },
-    {
-      title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 160,
-      render: (t: string) => <span style={{ fontSize: 13, color: '#8c8c8c' }}>{t}</span>,
-    },
-  ]
-
-  // ===== 车商 =====
+  // ===== 门店（即车商，系统分配门店身份） =====
   const filteredDealers = useMemo(() => {
     return mockDealers.filter((d) => {
       if (statusFilter && d.status !== statusFilter) return false
       if (companyFilter && d.companyId !== companyFilter) return false
       if (searchText) {
         const q = searchText.toLowerCase()
-        return d.name.toLowerCase().includes(q) || d.contact.includes(q) || d.phone.includes(q)
+        return d.assignedStoreName.toLowerCase().includes(q) || d.contact.includes(q) || d.phone.includes(q)
       }
       return true
     })
   }, [searchText, statusFilter, companyFilter])
 
   const dealerColumns: ColumnsType<Dealer> = [
-    { title: '车商编号', dataIndex: 'id', key: 'id', width: 100, render: (id: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 600, fontSize: 13 }}>{id}</span> },
-    { title: '车商名称', dataIndex: 'name', key: 'name', width: 150, render: (n: string) => <span style={{ fontWeight: 500 }}>{n}</span> },
+    { title: '门店全称', dataIndex: 'assignedStoreName', key: 'assignedStoreName', width: 160, fixed: 'left', render: (v: string) => <span style={{ fontWeight: 600 }}>{v}</span> },
     { title: '所属经销公司', dataIndex: 'companyName', key: 'companyName', width: 220 },
-    {
-      title: '门店身份（系统分配）', dataIndex: 'assignedStoreName', key: 'assignedStoreName', width: 150,
-      render: (v: string) => <Tag color="blue" style={{ borderRadius: 4 }}>{v}</Tag>,
-    },
     { title: '联系人', dataIndex: 'contact', key: 'contact', width: 90 },
     { title: '联系电话', dataIndex: 'phone', key: 'phone', width: 130, render: (p: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 13 }}>{p}</span> },
     {
@@ -165,7 +134,7 @@ export default function TenantListPC() {
       ),
     },
     {
-      title: '状态', dataIndex: 'status', key: 'status', width: 90,
+      title: '门店状态', dataIndex: 'status', key: 'status', width: 90,
       render: (s: string) => <Tag color={tenantStatusColorMap[s]} style={{ borderRadius: 4 }}>{tenantStatusTextMap[s]}</Tag>,
     },
     {
@@ -199,13 +168,8 @@ export default function TenantListPC() {
           <div className="stat-sub">等待审核入驻</div>
         </div>
         <div className="stat-card orange">
-          <div className="stat-label">车商总数</div>
-          <div className="stat-value">{companyStats.totalDealers}</div>
-          <div className="stat-sub">全平台车商</div>
-        </div>
-        <div className="stat-card gray">
           <div className="stat-label">门店总数</div>
-          <div className="stat-value">{mockStores.length}</div>
+          <div className="stat-value">{mockDealers.length}</div>
           <div className="stat-sub">全平台门店</div>
         </div>
       </div>
@@ -246,38 +210,15 @@ export default function TenantListPC() {
               ),
             },
             {
-              key: 'store',
-              label: <span><ShopOutlined /> 门店管理 ({mockStores.length})</span>,
-              children: (
-                <div>
-                  <div className="table-card-header" style={{ borderTop: 'none', paddingTop: 0 }}>
-                    <div className="filter-bar" style={{ flex: 1, margin: 0 }}>
-                      <Input placeholder="搜索门店名称/联系人" prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />} value={searchText} onChange={(e) => setSearchText(e.target.value)} style={{ width: 260 }} allowClear />
-                      <Select placeholder="所属经销公司" value={companyFilter} onChange={setCompanyFilter} allowClear style={{ width: 260 }} options={companyOptions} />
-                    </div>
-                    <Space>
-                      <Button icon={<ReloadOutlined />} onClick={resetFilters}>重置</Button>
-                      <Button type="primary" icon={<PlusOutlined />} style={{ background: '#E8352E', borderColor: '#E8352E' }}>新增门店</Button>
-                    </Space>
-                  </div>
-                  <div className="table-card-body">
-                    <Table columns={storeColumns} dataSource={filteredStores} rowKey="id" size="middle" scroll={{ x: 1200 }}
-                      pagination={{ pageSize: 10, showSizeChanger: true, showQuickJumper: true, showTotal: (total) => `共 ${total} 条` }}
-                    />
-                  </div>
-                </div>
-              ),
-            },
-            {
               key: 'dealer',
-              label: <span><UserOutlined /> 车商管理 ({mockDealers.length})</span>,
+              label: <span><ShopOutlined /> 门店管理 ({mockDealers.length})</span>,
               children: (
                 <div>
                   <div className="table-card-header" style={{ borderTop: 'none', paddingTop: 0 }}>
                     <div className="filter-bar" style={{ flex: 1, margin: 0 }}>
-                      <Input placeholder="搜索车商名称/联系人/电话" prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />} value={searchText} onChange={(e) => setSearchText(e.target.value)} style={{ width: 260 }} allowClear />
+                      <Input placeholder="搜索门店名称/联系人/电话" prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />} value={searchText} onChange={(e) => setSearchText(e.target.value)} style={{ width: 260 }} allowClear />
                       <Select placeholder="所属经销公司" value={companyFilter} onChange={setCompanyFilter} allowClear style={{ width: 260 }} options={companyOptions} />
-                      <Select placeholder="状态" value={statusFilter} onChange={setStatusFilter} allowClear style={{ width: 120 }} options={[
+                      <Select placeholder="门店状态" value={statusFilter} onChange={setStatusFilter} allowClear style={{ width: 120 }} options={[
                         { value: 'active', label: '已启用' }, { value: 'pending', label: '待审核' },
                         { value: 'suspended', label: '已停用' }, { value: 'rejected', label: '已驳回' },
                       ]} />
@@ -285,11 +226,11 @@ export default function TenantListPC() {
                     <Space>
                       <Button icon={<ReloadOutlined />} onClick={resetFilters}>重置</Button>
                       <Button icon={<ExportOutlined />}>导出</Button>
-                      <Button type="primary" icon={<PlusOutlined />} style={{ background: '#E8352E', borderColor: '#E8352E' }}>新增车商</Button>
+                      <Button type="primary" icon={<PlusOutlined />} style={{ background: '#E8352E', borderColor: '#E8352E' }}>新增门店</Button>
                     </Space>
                   </div>
                   <div className="table-card-body">
-                    <Table columns={dealerColumns} dataSource={filteredDealers} rowKey="id" size="middle" scroll={{ x: 1500 }}
+                    <Table columns={dealerColumns} dataSource={filteredDealers} rowKey="id" size="middle" scroll={{ x: 1200 }}
                       pagination={{ pageSize: 10, showSizeChanger: true, showQuickJumper: true, showTotal: (total) => `共 ${total} 条` }}
                     />
                   </div>

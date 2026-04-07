@@ -1,4 +1,4 @@
-import type { PurchaseOrder, BatchVehicle, ImportRow } from '../types/Purchase.types'
+import type { PurchaseOrder, BatchVehicle, ImportRow, CollisionLevel, WaterDamageLevel, FireDamageLevel } from '../types/Purchase.types'
 
 export const mockOrders: PurchaseOrder[] = [
   // ===== 单车采购 =====
@@ -22,9 +22,11 @@ export const mockOrders: PurchaseOrder[] = [
       transferCount: 1,
       price: 5.80,
       condition: '良好',
-      collision: '正常',
-      waterDamage: '正常',
-      fireDamage: '正常',
+      odometerStatus: '正常' as const,
+      conditionDesc: '',
+      collision: '覆盖件、加强件和结构件均无损伤、修复' as CollisionLevel,
+      waterDamage: '正常' as WaterDamageLevel,
+      fireDamage: '正常' as FireDamageLevel,
       maintenanceReport: '有',
       city: '广州',
     }],
@@ -59,9 +61,11 @@ export const mockOrders: PurchaseOrder[] = [
       transferCount: 2,
       price: 9.20,
       condition: '良好',
-      collision: '正常',
-      waterDamage: '正常',
-      fireDamage: '正常',
+      odometerStatus: '正常' as const,
+      conditionDesc: '',
+      collision: '覆盖件、加强件和结构件均无损伤、修复' as CollisionLevel,
+      waterDamage: '正常' as WaterDamageLevel,
+      fireDamage: '正常' as FireDamageLevel,
       maintenanceReport: '有',
       city: '深圳',
     }],

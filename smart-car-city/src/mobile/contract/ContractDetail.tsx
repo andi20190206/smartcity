@@ -143,6 +143,74 @@ export default function ContractDetail() {
         </>
       )}
 
+      {/* 签名牌证 */}
+      <div className="section-hd">签名牌证</div>
+      <div style={{ margin: '0 16px', background: '#fff', borderRadius: 8, padding: '12px 16px' }}>
+        <div style={{ display: 'flex', gap: 20, marginBottom: 16 }}>
+          <div>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 6 }}>业务员签名：</div>
+            <div style={{ width: 90, height: 60, border: '1px dashed var(--weui-FG-3)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)' }}>
+              <FileText size={18} />
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 6 }}>车主/委托人签名：</div>
+            <div style={{ width: 90, height: 60, border: '1px dashed var(--weui-FG-3)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)' }}>
+              <FileText size={18} />
+            </div>
+          </div>
+        </div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-0)', marginBottom: 10 }}>牌证资料</div>
+        {contract.vehicles.map((v, idx) => (
+          <div key={v.id} style={{ marginBottom: 12, border: '0.5px solid var(--weui-FG-3)', borderRadius: 8, overflow: 'hidden' }}>
+            <div style={{ background: 'var(--bg)', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 6, borderBottom: '0.5px solid var(--weui-FG-3)' }}>
+              <span className="tag tag-info" style={{ fontSize: 10 }}>车辆{idx + 1}</span>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>{v.plateNo}</span>
+            </div>
+            <div style={{ padding: '10px 12px', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {['行驶证', '登记证（正面）', '登记证（背面）'].map((label) => (
+                <div key={label}>
+                  <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 4 }}>{label}</div>
+                  <div style={{ width: 80, height: 56, border: '1px dashed var(--weui-FG-3)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', background: 'var(--bg)' }}>
+                    <FileText size={16} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 平台建议价 */}
+      <div className="section-hd">平台建议价</div>
+      <div style={{ margin: '0 16px', background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
+        <div style={{ padding: '10px 16px', fontSize: 12, color: 'var(--text-2)', borderBottom: '0.5px solid var(--weui-FG-3)' }}>
+          基于第三方平台数据，按车况等级给出建议价格参考
+        </div>
+        {contract.vehicles.map((v, idx) => (
+          <div key={v.id} style={{ padding: '10px 16px', borderBottom: idx < contract.vehicles.length - 1 ? '0.5px solid var(--weui-FG-3)' : 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>{v.plateNo}</span>
+              {v.newCarGuidePrice && <span style={{ fontSize: 11, color: 'var(--text-2)' }}>新车指导价 {v.newCarGuidePrice.toFixed(2)}万</span>}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1, background: 'var(--green-bg)', borderRadius: 6, padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ fontSize: 10, color: 'var(--text-2)' }}>车况良好</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--green)' }}>{v.thirdPartyPrice ? `${v.thirdPartyPrice.toFixed(2)}万` : '-'}</div>
+              </div>
+              <div style={{ flex: 1, background: 'var(--orange-bg, rgba(250,140,22,0.08))', borderRadius: 6, padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ fontSize: 10, color: 'var(--text-2)' }}>车况一般</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--orange)' }}>{v.thirdPartyPrice ? `${(v.thirdPartyPrice * 0.945).toFixed(2)}万` : '-'}</div>
+              </div>
+              <div style={{ flex: 1, background: 'var(--brand-bg)', borderRadius: 6, padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ fontSize: 10, color: 'var(--text-2)' }}>车况较差</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--brand)' }}>{v.thirdPartyPrice ? `${(v.thirdPartyPrice * 0.89).toFixed(2)}万` : '-'}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* 合同信息 */}
       <div className="section-hd">合同信息</div>
       <div className="weui-cells" style={{ margin: '0 16px', borderRadius: 8, overflow: 'hidden' }}>

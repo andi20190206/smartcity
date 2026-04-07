@@ -156,19 +156,89 @@ export default function ContractDetailPC() {
                 key: 'sign',
                 label: '签名牌证',
                 children: (
-                  <div style={{ padding: '12px 0', display: 'flex', gap: 32 }}>
-                    <div>
-                      <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 8 }}>业务员签名：</div>
-                      <div style={{ width: 120, height: 80, border: '1px dashed #d9d9d9', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bfbfbf' }}>
-                        <PictureOutlined style={{ fontSize: 24 }} />
+                  <div style={{ padding: '12px 0' }}>
+                    {/* 签名区域 */}
+                    <div style={{ display: 'flex', gap: 32, marginBottom: 24 }}>
+                      <div>
+                        <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 8 }}>业务员签名：</div>
+                        <div style={{ width: 120, height: 80, border: '1px dashed #d9d9d9', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bfbfbf' }}>
+                          <PictureOutlined style={{ fontSize: 24 }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 8 }}>车主/委托人签名：</div>
+                        <div style={{ width: 120, height: 80, border: '1px dashed #d9d9d9', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bfbfbf' }}>
+                          <PictureOutlined style={{ fontSize: 24 }} />
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 8 }}>车主/委托人签名：</div>
-                      <div style={{ width: 120, height: 80, border: '1px dashed #d9d9d9', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bfbfbf' }}>
-                        <PictureOutlined style={{ fontSize: 24 }} />
+                    {/* 牌证资料 - 按车牌分组 */}
+                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: '#1a1a2e' }}>牌证资料</div>
+                    {contract.vehicles.map((v, idx) => (
+                      <div key={v.id} style={{ marginBottom: 20, border: '1px solid #f0f0f0', borderRadius: 8, overflow: 'hidden' }}>
+                        <div style={{ background: '#fafafa', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #f0f0f0' }}>
+                          <Tag color="blue" style={{ borderRadius: 4, margin: 0 }}>车辆{idx + 1}</Tag>
+                          <span style={{ fontWeight: 600 }}>{v.plateNo}</span>
+                          <span style={{ fontSize: 12, color: '#8c8c8c', fontFamily: "'DM Sans', monospace" }}>VIN: {v.vin}</span>
+                        </div>
+                        <div style={{ padding: 16, display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+                          <div>
+                            <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 6 }}>行驶证</div>
+                            <div style={{ width: 140, height: 90, border: '1px dashed #d9d9d9', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bfbfbf', background: '#fafafa' }}>
+                              <PictureOutlined style={{ fontSize: 22 }} />
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 6 }}>登记证（正面）</div>
+                            <div style={{ width: 140, height: 90, border: '1px dashed #d9d9d9', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bfbfbf', background: '#fafafa' }}>
+                              <PictureOutlined style={{ fontSize: 22 }} />
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 6 }}>登记证（背面）</div>
+                            <div style={{ width: 140, height: 90, border: '1px dashed #d9d9d9', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bfbfbf', background: '#fafafa' }}>
+                              <PictureOutlined style={{ fontSize: 22 }} />
+                            </div>
+                          </div>
+                        </div>
                       </div>
+                    ))}
+                  </div>
+                ),
+              },
+              {
+                key: 'platformPrice',
+                label: '平台建议价',
+                children: (
+                  <div style={{ padding: '8px 0' }}>
+                    <div style={{ marginBottom: 12, fontSize: 13, color: '#8c8c8c' }}>
+                      基于第三方平台数据，按车况等级给出建议价格参考
                     </div>
+                    <Table
+                      dataSource={contract.vehicles}
+                      rowKey="id"
+                      size="small"
+                      pagination={false}
+                      bordered
+                      columns={[
+                        {
+                          title: '车辆基础信息',
+                          children: [
+                            { title: '车牌', dataIndex: 'plateNo', width: 90, render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span> },
+                            { title: 'VIN码', dataIndex: 'vin', width: 70, render: (v: string) => <span style={{ fontSize: 12 }}>{v ? `${v.length}位` : '-'}</span> },
+                            { title: '新车指导价', dataIndex: 'newCarGuidePrice', width: 100, render: (v: number | null) => v ? `${v.toFixed(2)}万元` : '-' },
+                          ],
+                        },
+                        {
+                          title: '车商收车价',
+                          children: [
+                            { title: '车况良好', key: 'good2', width: 90, render: (_: unknown, r: ContractVehicleItem) => r.thirdPartyPrice ? <span style={{ color: '#52c41a', fontWeight: 600 }}>{r.thirdPartyPrice.toFixed(2)}万元</span> : '-' },
+                            { title: '车况一般', key: 'fair2', width: 90, render: (_: unknown, r: ContractVehicleItem) => r.thirdPartyPrice ? <span style={{ color: '#fa8c16', fontWeight: 600 }}>{(r.thirdPartyPrice * 0.945).toFixed(2)}万元</span> : '-' },
+                            { title: '车况较差', key: 'poor2', width: 90, render: (_: unknown, r: ContractVehicleItem) => r.thirdPartyPrice ? <span style={{ color: '#ff4d4f', fontWeight: 600 }}>{(r.thirdPartyPrice * 0.89).toFixed(2)}万元</span> : '-' },
+                          ],
+                        },
+                      ]}
+                    />
                   </div>
                 ),
               },

@@ -322,11 +322,11 @@ export default function PurchaseDetailPC() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
             <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/pc/purchase')} style={{ padding: '4px 8px' }} />
             <span className="order-id">{order.id}</span>
-            <Tag color={statusColorMap[order.status]} style={{ fontSize: 13, padding: '2px 12px', borderRadius: 6 }}>
-              {order.statusText}
-            </Tag>
             <Tag color={order.mode === 'batch' ? 'blue' : 'default'} style={{ borderRadius: 4 }}>
               {order.mode === 'single' ? '单车采购' : '批量采购'}
+            </Tag>
+            <Tag color={statusColorMap[order.status]} style={{ fontSize: 13, padding: '2px 12px', borderRadius: 6 }}>
+              {order.statusText}
             </Tag>
           </div>
           <div className="order-meta">

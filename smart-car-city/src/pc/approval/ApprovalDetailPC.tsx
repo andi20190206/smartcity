@@ -8,8 +8,10 @@ import {
   DollarOutlined, InfoCircleOutlined, WarningOutlined,
 } from '@ant-design/icons'
 import { mockApprovals } from '../../shared/mock/approvalMock'
+import { mockOrders } from '../../shared/mock/purchaseMock'
 import { approvalTypeText } from '../../shared/constants/approvalStatusMap'
 import type { VehiclePricingInfo } from '../../shared/types/Approval.types'
+import { vehicleDocImages, vehiclePhotoImages, maintenanceImages } from '../../shared/constants/docImages'
 
 const { TextArea } = Input
 
@@ -55,6 +57,7 @@ export default function ApprovalDetailPC() {
   const isPending = record.status === 'pending' || record.status === 'approving'
   const currentStep = record.nodes.findIndex((n) => n.status === 'pending')
   const stepCurrent = currentStep === -1 ? record.nodes.length : currentStep
+  const linkedOrder = record.type === 'purchase' ? mockOrders.find((o) => o.id === record.bizOrderId) : null
 
   return (
     <div className="detail-page">
@@ -112,10 +115,12 @@ export default function ApprovalDetailPC() {
             <Descriptions.Item label="关联单号">
               <a onClick={() => {
                 const bid = record.bizOrderId
-                if (bid.startsWith('CG-')) navigate(`/pc/purchase/${bid}`)
-                else if (bid.startsWith('DK-')) navigate(`/pc/fund/advance/${bid}`)
-                else if (bid.startsWith('XS-')) navigate(`/pc/sales/${bid}`)
-                else if (bid.startsWith('HT-')) navigate(`/pc/contract/${bid}`)
+                let path = ''
+                if (bid.startsWith('CG-')) path = `/pc/purchase/${bid}`
+                else if (bid.startsWith('DK-')) path = `/pc/fund/advance/${bid}`
+                else if (bid.startsWith('XS-')) path = `/pc/sales/${bid}`
+                else if (bid.startsWith('HT-')) path = `/pc/contract/${bid}`
+                if (path) window.open(`${window.location.origin}${window.location.pathname}#${path}`, '_blank')
               }} style={{ color: '#1677ff', cursor: 'pointer', textDecoration: 'underline' }}>
                 {record.bizOrderId}
               </a>
@@ -322,6 +327,132 @@ export default function ApprovalDetailPC() {
             />
           </div>
         </div>
+      )}
+
+      {/* 采购审批：采购单车辆明细、卖方信息、维保/出险/电池/证件/车辆图片 */}
+      {record.type === 'purchase' && linkedOrder && (
+        <>
+          {/* 车辆明细 - 4列一行 */}
+          <div className="detail-section">
+            <div className="detail-section-title"><CarOutlined /> 车辆明细（{linkedOrder.vehicles.length}台）</div>
+            <div className="detail-section-body">
+              {linkedOrder.vehicles.map((v, vi) => (
+                <div key={v.id} style={{ marginBottom: vi < linkedOrder.vehicles.length - 1 ? 16 : 0, border: '1px solid #f0f0f0', borderRadius: 10, overflow: 'hidden' }}>
+                  <div style={{ padding: '10px 16px', background: '#fafafa', borderBottom: '1px solid #f0f0f0', fontWeight: 600, fontSize: 13 }}>
+                    {v.plateNo} <span style={{ fontWeight: 400, color: '#8c8c8c', marginLeft: 8 }}>{v.brandModel}</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                    {[
+                      { label: 'VIN码', value: v.vin },
+                      { label: '颜色', value: v.color },
+                      { label: '里程', value: `${v.mileage}万km` },
+                      { label: '上牌日期', value: v.registerDate },
+                      { label: '年检有效期', value: v.annualInspection },
+                      { label: '过户次数', value: `${v.transferCount}次` },
+                      { label: '采购价', value: `${v.price.toFixed(2)}万`, highlight: true },
+                      { label: '车况', value: v.condition },
+                      { label: '碰撞', value: v.collision },
+                      { label: '水泡', value: v.waterDamage },
+                      { label: '火烧', value: v.fireDamage },
+                      { label: '维保报告', value: v.maintenanceReport },
+                    ].map((item) => (
+                      <div key={item.label} style={{ padding: '10px 16px', borderBottom: '1px solid #f5f5f5', borderRight: '1px solid #f5f5f5' }}>
+                        <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 4 }}>{item.label}</div>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: item.highlight ? '#E8352E' : '#1a1a2e', fontFamily: item.label === 'VIN码' ? "'DM Sans', monospace" : undefined, wordBreak: 'break-all' }}>{item.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 车主/卖方信息 */}
+          <div className="detail-section">
+            <div className="detail-section-title"><UserOutlined /> 车主/卖方信息</div>
+            <div className="detail-section-body">
+              <Descriptions column={4} size="small" labelStyle={{ color: '#8c8c8c', fontSize: 13 }} contentStyle={{ fontSize: 13 }}>
+                <Descriptions.Item label="车主类型">{linkedOrder.ownerType}</Descriptions.Item>
+                <Descriptions.Item label="姓名/企业">{linkedOrder.ownerName}</Descriptions.Item>
+                <Descriptions.Item label="证件号码"><span style={{ fontFamily: "'DM Sans', monospace" }}>{linkedOrder.ownerIdNo}</span></Descriptions.Item>
+                <Descriptions.Item label="联系电话">{linkedOrder.ownerPhone}</Descriptions.Item>
+              </Descriptions>
+              <Descriptions column={4} size="small" labelStyle={{ color: '#8c8c8c', fontSize: 13 }} contentStyle={{ fontSize: 13 }} style={{ marginTop: 8 }}>
+                <Descriptions.Item label="收款人身份">{linkedOrder.payeeIdentity}</Descriptions.Item>
+                <Descriptions.Item label="收款人">{linkedOrder.payeeName}</Descriptions.Item>
+                <Descriptions.Item label="开户行">{linkedOrder.payeeBank}</Descriptions.Item>
+                <Descriptions.Item label="银行卡号"><span style={{ fontFamily: "'DM Sans', monospace" }}>{linkedOrder.payeeCardNo}</span></Descriptions.Item>
+              </Descriptions>
+            </div>
+          </div>
+
+          {/* 维保记录 / 出险记录 / 电池评估 */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+            <div className="detail-section">
+              <div className="detail-section-title">维保记录</div>
+              <div className="detail-section-body" style={{ textAlign: 'center', padding: '16px' }}>
+                <div style={{ color: '#8c8c8c', fontSize: 13, marginBottom: 8 }}>无查询结果</div>
+                <Button size="small" type="link">查询维保</Button>
+              </div>
+            </div>
+            <div className="detail-section">
+              <div className="detail-section-title">出险记录</div>
+              <div className="detail-section-body" style={{ textAlign: 'center', padding: '16px' }}>
+                <div style={{ color: '#8c8c8c', fontSize: 13, marginBottom: 8 }}>无查询结果</div>
+                <Button size="small" type="link">查询出险</Button>
+              </div>
+            </div>
+            <div className="detail-section">
+              <div className="detail-section-title">电池评估</div>
+              <div className="detail-section-body" style={{ textAlign: 'center', padding: '16px' }}>
+                <div style={{ color: '#8c8c8c', fontSize: 13, marginBottom: 8 }}>无查询结果</div>
+                <Button size="small" type="link">查询电池</Button>
+              </div>
+            </div>
+          </div>
+
+          {/* 证件照片（行驶证+登记证） */}
+          <div className="detail-section">
+            <div className="detail-section-title">证件照片</div>
+            <div className="detail-section-body">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                {([
+                  ['行驶证正本', vehicleDocImages.licenseF],
+                  ['行驶证副本', vehicleDocImages.licenseB],
+                  ['登记证首页', vehicleDocImages.regF],
+                  ['登记证内页', vehicleDocImages.regB],
+                ] as const).map(([label, src]) => (
+                  <div key={label} style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #f0f0f0', position: 'relative' }}>
+                    <img src={src} alt={label} style={{ width: '100%', height: 100, objectFit: 'cover', display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(0,0,0,0.5))', padding: '12px 6px 4px', fontSize: 11, color: '#fff', textAlign: 'center' }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 车辆图片 */}
+          <div className="detail-section">
+            <div className="detail-section-title">车辆图片</div>
+            <div className="detail-section-body">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10 }}>
+                {([
+                  ['左前45°', vehiclePhotoImages.lf45],
+                  ['右后45°', vehiclePhotoImages.rb45],
+                  ['仪表盘', vehiclePhotoImages.dashboard],
+                  ['座椅', vehiclePhotoImages.seat],
+                  ['铭牌', vehiclePhotoImages.nameplate],
+                  ['发动机舱', vehiclePhotoImages.engine],
+                ] as const).map(([label, src]) => (
+                  <div key={label} style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #f0f0f0', position: 'relative' }}>
+                    <img src={src} alt={label} style={{ width: '100%', height: 80, objectFit: 'cover', display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(0,0,0,0.5))', padding: '10px 4px 3px', fontSize: 10, color: '#fff', textAlign: 'center' }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* 门店授信额度 - 仅采购审批 */}

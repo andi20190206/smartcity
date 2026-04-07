@@ -91,4 +91,35 @@ export interface ApprovalRecord {
   dealerCredit?: DealerCreditInfo
   /** 采购审批专用：采购类型 */
   purchaseMode?: 'single' | 'batch'
+  /** 垫款审批专用：垫款详情 */
+  advanceDetail?: AdvanceApprovalDetail
+}
+
+/** 垫款审批详情 */
+export interface AdvanceApprovalDetail {
+  /** 车辆信息 */
+  plateNo: string
+  brandModel: string
+  vin: string
+  registerDate: string
+  condition: string
+  vehicleStatus: string    // 已成交/在售等
+  warehouseInfo: string    // 在门店库
+  transferStatus: string   // 过户状态：未接收等
+  paymentType: string      // 车款：付第三方等
+  /** 金额信息 */
+  contractPrice: number    // 合同价（元）
+  applyAdvance: number     // 申请垫款（元）
+  regionTotalAdvance?: string // 区域总垫身
+  dealPrice: number        // 成交价（元）
+  /** 收款人信息 */
+  sellerName: string
+  sellerBank: string
+  sellerCardNo: string
+  sellerPhone?: string
+  /** 门店额度信息 */
+  pendingAdvance: number   // 待审批垫款（元）
+  applyableQuota: number   // 可申请额度（元）
+  availableDeposit: number // 可用合作款项（元）
+  availableQuota: number   // 可用额度（元）
 }

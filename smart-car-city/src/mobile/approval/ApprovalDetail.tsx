@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { ChevronLeft, CheckCircle, XCircle, Clock, FileText, User, Building2, Car, Send, ArrowRightLeft, ChevronDown, AlertTriangle, DollarSign, TrendingUp, TrendingDown, Minus, Info } from 'lucide-react'
+import { ChevronLeft, CheckCircle, XCircle, Clock, FileText, User, Building2, Car, Send, ArrowRightLeft, ChevronDown, AlertTriangle, DollarSign, TrendingUp, TrendingDown, Minus, Info, CreditCard, Banknote, HelpCircle } from 'lucide-react'
 import { mockApprovals } from '../../shared/mock/approvalMock'
 import { approvalStatusTagColor, approvalTypeTagColor } from '../../shared/constants/approvalStatusMap'
 import type { VehiclePricingInfo } from '../../shared/types/Approval.types'

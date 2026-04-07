@@ -11,6 +11,7 @@ import type { ColumnsType } from 'antd/es/table'
 import { mockOrders } from '../../shared/mock/purchaseMock'
 import type { VehicleItem } from '../../shared/types/Purchase.types'
 import { vehicleDocImages, vehiclePhotoImages, idDocImages, payeeDocImages, maintenanceImages } from '../../shared/constants/docImages'
+import { getCollisionShort, getCollisionColor, getWaterDamageColor, getFireDamageShort, getFireDamageColor } from '../../shared/constants/vehicleConditionOptions'
 
 const statusColorMap: Record<string, string> = {
   pending_check: 'processing',
@@ -54,11 +55,12 @@ export default function PurchaseDetailPC() {
     {
       title: '车况信息',
       key: 'inspect',
-      width: 160,
+      width: 220,
       render: (_: unknown, r: VehicleItem) => (
-        <Space size={4}>
-          <Tag color={r.collision === '正常' ? 'green' : 'red'} style={{ fontSize: 11 }}>碰撞{r.collision}</Tag>
-          <Tag color={r.waterDamage === '正常' ? 'green' : 'red'} style={{ fontSize: 11 }}>水泡{r.waterDamage}</Tag>
+        <Space size={4} wrap>
+          <Tag color={getCollisionColor(r.collision)} style={{ fontSize: 11 }}>碰撞: {getCollisionShort(r.collision)}</Tag>
+          <Tag color={getWaterDamageColor(r.waterDamage)} style={{ fontSize: 11 }}>水泡: {r.waterDamage}</Tag>
+          <Tag color={getFireDamageColor(r.fireDamage)} style={{ fontSize: 11 }}>火烧: {getFireDamageShort(r.fireDamage)}</Tag>
         </Space>
       ),
     },

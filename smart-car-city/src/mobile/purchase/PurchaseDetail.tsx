@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronDown, ChevronUp, Camera } from 'lucide-react'
 import { mockOrders } from '../../shared/mock/purchaseMock'
 import type { VehicleItem } from '../../shared/types/Purchase.types'
 import { vehicleDocImages, vehiclePhotoImages, idDocImages, payeeDocImages, maintenanceImages } from '../../shared/constants/docImages'
+import { getCollisionShort, getCollisionColor, getWaterDamageColor, getFireDamageShort, getFireDamageColor } from '../../shared/constants/vehicleConditionOptions'
 
 const tagClass: Record<string, string> = {
   pending_check: 'tag-warn', pending_sign: 'tag-info', signed: 'tag-success', rejected: 'tag-error', cancelled: 'tag-default',
@@ -42,9 +43,11 @@ function VehiclePanel({ v, index, total }: { v: VehicleItem; index: number; tota
           <InfoRow label="上牌日期" value={v.registerDate} />
           <InfoRow label="颜色" value={v.color} />
           <InfoRow label="车况" value={v.condition} />
-          <InfoRow label="碰撞" value={v.collision} />
+          <InfoRow label="碰撞" value={getCollisionShort(v.collision)} />
           <InfoRow label="水泡" value={v.waterDamage} />
-          <InfoRow label="火烧" value={v.fireDamage} />
+          <InfoRow label="火烧" value={getFireDamageShort(v.fireDamage)} />
+          {v.odometerStatus && <InfoRow label="里程表状态" value={v.odometerStatus} />}
+          {v.conditionDesc && <InfoRow label="车况描述" value={v.conditionDesc} />}
           {/* 车辆照片 */}
           <div style={{ padding: '8px 16px 4px' }}>
             <div style={{ fontSize: 12, color: 'var(--text-1)', marginBottom: 6, fontWeight: 500 }}>车辆照片</div>

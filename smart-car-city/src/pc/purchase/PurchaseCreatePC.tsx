@@ -12,6 +12,7 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
+import { collisionOptions, waterDamageOptions, fireDamageOptions, getCollisionShort, getCollisionColor, getWaterDamageColor, getFireDamageShort, getFireDamageColor } from '../../shared/constants/vehicleConditionOptions'
 
 const { Text } = Typography
 
@@ -29,6 +30,8 @@ interface VehicleFormData {
   transferCount: string
   price: string
   condition: string
+  odometerStatus: string
+  conditionDesc: string
   collision: string
   waterDamage: string
   fireDamage: string
@@ -40,7 +43,8 @@ const emptyVehicle = (): VehicleFormData => ({
   plateNo: '', vin: '', brandModel: '', engineNo: '',
   useType: '', mileage: '', registerDate: '', annualInspection: '',
   color: '', transferCount: '', price: '', condition: '',
-  collision: '正常', waterDamage: '正常', fireDamage: '正常', maintenanceReport: '有',
+  odometerStatus: '', conditionDesc: '',
+  collision: '覆盖件、加强件和结构件均无损伤、修复', waterDamage: '正常', fireDamage: '正常', maintenanceReport: '有',
 })
 
 const colorOptions = ['白色', '黑色', '银色', '灰色', '红色', '蓝色', '星耀白', '曜岩黑', '矿石白', '珍珠白', '极光蓝', '赤帝红', '星空灰', '彩晶黑', '云母红'].map((c) => ({ label: c, value: c }))
@@ -209,12 +213,12 @@ export default function PurchaseCreatePC() {
     setTestTypeIndex(testTypeIndex + 1)
 
     const testVehicles: VehicleFormData[] = [
-      { key: '1', plateNo: '粤A·D2588', vin: 'LVHCV6637K50CLTS1', brandModel: '别克英朗 2019款 18T 自动互联精英型', engineNo: 'LFV2A21G5K3012345', useType: '非营运', mileage: '3.2', registerDate: '2019-06-15', annualInspection: '2027-06-15', color: '白色', transferCount: '1', price: '5.80', condition: '良好', collision: '正常', waterDamage: '正常', fireDamage: '正常', maintenanceReport: '有' },
+      { key: '1', plateNo: '粤A·D2588', vin: 'LVHCV6637K50CLTS1', brandModel: '别克英朗 2019款 18T 自动互联精英型', engineNo: 'LFV2A21G5K3012345', useType: '非营运', mileage: '3.2', registerDate: '2019-06-15', annualInspection: '2027-06-15', color: '白色', transferCount: '1', price: '5.80', condition: '良好', odometerStatus: '正常', conditionDesc: '', collision: '覆盖件、加强件和结构件均无损伤、修复', waterDamage: '正常', fireDamage: '正常', maintenanceReport: '有' },
     ]
     if (mode === 'batch') {
       testVehicles.push(
-        { key: '2', plateNo: '粤B·67890', vin: 'LGBH52E04GY654321', brandModel: '丰田卡罗拉 2021款 1.8L 双擎精英版', engineNo: '2ZR1234567', useType: '非营运', mileage: '5.8', registerDate: '2021-03-10', annualInspection: '2027-03-10', color: '黑色', transferCount: '2', price: '9.20', condition: '良好', collision: '正常', waterDamage: '正常', fireDamage: '正常', maintenanceReport: '有' },
-        { key: '3', plateNo: '粤A·33456', vin: 'WBAJB0C55JB174523', brandModel: '凯迪拉克 GT4 2023款 25T 尊贵型', engineNo: 'LSY1234567', useType: '非营运', mileage: '1.5', registerDate: '2023-01-20', annualInspection: '2027-01-20', color: '星耀白', transferCount: '0', price: '17.50', condition: '良好', collision: '正常', waterDamage: '正常', fireDamage: '正常', maintenanceReport: '有' },
+        { key: '2', plateNo: '粤B·67890', vin: 'LGBH52E04GY654321', brandModel: '丰田卡罗拉 2021款 1.8L 双擎精英版', engineNo: '2ZR1234567', useType: '非营运', mileage: '5.8', registerDate: '2021-03-10', annualInspection: '2027-03-10', color: '黑色', transferCount: '2', price: '9.20', condition: '良好', odometerStatus: '正常', conditionDesc: '', collision: '覆盖件、加强件和结构件均无损伤、修复', waterDamage: '正常', fireDamage: '正常', maintenanceReport: '有' },
+        { key: '3', plateNo: '粤A·33456', vin: 'WBAJB0C55JB174523', brandModel: '凯迪拉克 GT4 2023款 25T 尊贵型', engineNo: 'LSY1234567', useType: '非营运', mileage: '1.5', registerDate: '2023-01-20', annualInspection: '2027-01-20', color: '星耀白', transferCount: '0', price: '17.50', condition: '良好', odometerStatus: '正常', conditionDesc: '', collision: '结构件、加强件无损伤、修复；覆盖件有修复', waterDamage: '正常', fireDamage: '正常', maintenanceReport: '有' },
       )
     }
     setVehicles(testVehicles)
@@ -273,12 +277,12 @@ export default function PurchaseCreatePC() {
     },
     {
       title: '车况信息',
-      width: 180,
+      width: 220,
       render: (_: unknown, r: VehicleFormData) => (
-        <Space size={4}>
-          <Tag color={r.collision === '正常' ? 'green' : 'red'} style={{ fontSize: 11 }}>碰撞</Tag>
-          <Tag color={r.waterDamage === '正常' ? 'green' : 'red'} style={{ fontSize: 11 }}>水泡</Tag>
-          <Tag color={r.fireDamage === '正常' ? 'green' : 'red'} style={{ fontSize: 11 }}>火烧</Tag>
+        <Space size={4} wrap>
+          <Tag color={getCollisionColor(r.collision as any)} style={{ fontSize: 11 }}>碰撞: {getCollisionShort(r.collision as any)}</Tag>
+          <Tag color={getWaterDamageColor(r.waterDamage as any)} style={{ fontSize: 11 }}>水泡: {r.waterDamage}</Tag>
+          <Tag color={getFireDamageColor(r.fireDamage as any)} style={{ fontSize: 11 }}>火烧: {getFireDamageShort(r.fireDamage as any)}</Tag>
         </Space>
       ),
     },

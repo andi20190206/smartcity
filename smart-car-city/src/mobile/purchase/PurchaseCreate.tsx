@@ -64,6 +64,18 @@ export default function PurchaseCreate() {
   const [viewerSrc, setViewerSrc] = useState('')
   const [viewerVisible, setViewerVisible] = useState(false)
 
+  // 车况信息状态
+  const [conditionData, setConditionData] = useState({
+    odometerStatus: '' as string,
+    conditionDesc: '',
+    collision: '' as string,
+    waterDamage: '' as string,
+    fireDamage: '' as string,
+    maintenanceReport: '有' as string,
+    showCollision: false,
+    showFire: false,
+  })
+
   // 行驶证内嵌查看器状态
   const [licenseScale, setLicenseScale] = useState(1)
   const [licenseRotation, setLicenseRotation] = useState(0)
@@ -202,6 +214,16 @@ export default function PurchaseCreate() {
     const a: Record<string, { id: string; url: string; name: string }> = {}
     photoSlots.forEach((s) => { a[s.key] = { id: `t-${s.key}`, url: svg(s.label), name: `${s.label}.jpg` } })
     setPhotoAssigned(a); setPhotoPool([])
+    setConditionData({
+      odometerStatus: '正常',
+      conditionDesc: '车况整体良好，无明显损伤',
+      collision: '覆盖件、加强件和结构件均无损伤、修复',
+      waterDamage: '正常',
+      fireDamage: '正常',
+      maintenanceReport: '有',
+      showCollision: false,
+      showFire: false,
+    })
   }
 
   const [paymentData, setPaymentData] = useState({
@@ -506,17 +528,116 @@ export default function PurchaseCreate() {
 
           <div className="section-hd">车况信息 {mode === 'batch' && <span style={{ color: 'var(--weui-brand)', fontSize: 12 }}>（第{activeIdx + 1}台）</span>}</div>
           <div className="weui-cells">
-            {['碰撞', '水泡', '火烧', '维保报告'].map((label) => (
-              <div key={label} className="weui-cell">
-                <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>{label}</label></div>
-                <div className="weui-cell__bd" style={{ fontSize: 14 }}>{label === '维保报告' ? '有' : '正常'}</div>
-                <div className="weui-cell__ft"><ChevronDown size={16} color="var(--weui-FG-2)" /></div>
+            {/* 里程表状态 */}
+            <div className="weui-cell">
+              <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>里程表状态</label></div>
+              <div className="weui-cell__bd" style={{ fontSize: 14 }}>{conditionData.odometerStatus || '请选择'}</div>
+              <div className="weui-cell__ft"><ChevronDown size={16} color="var(--weui-FG-2)" /></div>
+            </div>
+            {/* 碰撞 */}
+            <div className="weui-cell" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: conditionData.showCollision ? 8 : 0 }}>
+                <label className="weui-label" style={{ fontSize: 14 }}>碰撞 <span style={{ color: 'var(--weui-RED)', fontSize: 11 }}>*</span></label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }} onClick={() => setConditionData(d => ({ ...d, showCollision: !d.showCollision }))}>
+                  <span style={{ fontSize: 13, color: conditionData.collision ? 'var(--weui-FG-0)' : 'var(--weui-FG-1)' }}>
+                    {conditionData.collision ? (conditionData.collision.length > 12 ? conditionData.collision.slice(0, 12) + '...' : conditionData.collision) : '请选择'}
+                  </span>
+                  <ChevronDown size={16} color="var(--weui-FG-2)" style={{ transform: conditionData.showCollision ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                </div>
               </div>
-            ))}
+              {conditionData.showCollision && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {[
+                    '覆盖件、加强件和结构件均无损伤、修复',
+                    '结构件、加强件无损伤、修复；覆盖件有修复',
+                    '结构件无损伤、修复，加强件无切割；加强件和覆盖件有修复；安全气囊进行过事故更换',
+                    '结构件发生一处或多处损伤、修复；加强件发生一处或多处切割',
+                  ].map((opt, i) => (
+                    <div key={i} onClick={() => setConditionData(d => ({ ...d, collision: opt, showCollision: false }))}
+                      style={{ padding: '8px 10px', borderRadius: 6, fontSize: 12, lineHeight: 1.5, cursor: 'pointer',
+                        background: conditionData.collision === opt ? 'var(--weui-brand)' : 'var(--weui-BG-1)',
+                        color: conditionData.collision === opt ? '#fff' : 'var(--weui-FG-0)',
+                        border: conditionData.collision === opt ? 'none' : '1px solid var(--weui-FG-3)' }}>
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* 水泡 */}
+            <div className="weui-cell">
+              <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>水泡 <span style={{ color: 'var(--weui-RED)', fontSize: 11 }}>*</span></label></div>
+              <div className="weui-cell__bd" style={{ display: 'flex', gap: 8 }}>
+                {['正常', '涉水', '泡水'].map((opt) => (
+                  <div key={opt} onClick={() => setConditionData(d => ({ ...d, waterDamage: opt }))}
+                    style={{ padding: '6px 14px', borderRadius: 6, fontSize: 13, cursor: 'pointer',
+                      background: conditionData.waterDamage === opt ? 'var(--weui-brand)' : 'var(--weui-BG-1)',
+                      color: conditionData.waterDamage === opt ? '#fff' : 'var(--weui-FG-0)' }}>
+                    {opt}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* 火烧 */}
+            <div className="weui-cell" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: conditionData.showFire ? 8 : 0 }}>
+                <label className="weui-label" style={{ fontSize: 14 }}>火烧 <span style={{ color: 'var(--weui-RED)', fontSize: 11 }}>*</span></label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }} onClick={() => setConditionData(d => ({ ...d, showFire: !d.showFire }))}>
+                  <span style={{ fontSize: 13, color: conditionData.fireDamage ? 'var(--weui-FG-0)' : 'var(--weui-FG-1)' }}>
+                    {conditionData.fireDamage ? (conditionData.fireDamage.length > 12 ? conditionData.fireDamage.slice(0, 12) + '...' : conditionData.fireDamage) : '请选择'}
+                  </span>
+                  <ChevronDown size={16} color="var(--weui-FG-2)" style={{ transform: conditionData.showFire ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                </div>
+              </div>
+              {conditionData.showFire && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {[
+                    '正常',
+                    '客舱外火烧熏黑碳化痕迹或火烧炙烤融化面积达到 0.3m²(含) 以上',
+                    '客舱内火烧熏黑碳化痕迹或火烧炙烤融化面积达到 0.3m²(含) 以上',
+                  ].map((opt, i) => (
+                    <div key={i} onClick={() => setConditionData(d => ({ ...d, fireDamage: opt, showFire: false }))}
+                      style={{ padding: '8px 10px', borderRadius: 6, fontSize: 12, lineHeight: 1.5, cursor: 'pointer',
+                        background: conditionData.fireDamage === opt ? 'var(--weui-brand)' : 'var(--weui-BG-1)',
+                        color: conditionData.fireDamage === opt ? '#fff' : 'var(--weui-FG-0)',
+                        border: conditionData.fireDamage === opt ? 'none' : '1px solid var(--weui-FG-3)' }}>
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* 维保报告 */}
+            <div className="weui-cell">
+              <div className="weui-cell__hd"><label className="weui-label" style={{ width: 90, fontSize: 14 }}>维保报告 <span style={{ color: 'var(--weui-RED)', fontSize: 11 }}>*</span></label></div>
+              <div className="weui-cell__bd" style={{ display: 'flex', gap: 8 }}>
+                {['有', '无'].map((opt) => (
+                  <div key={opt} onClick={() => setConditionData(d => ({ ...d, maintenanceReport: opt }))}
+                    style={{ padding: '6px 14px', borderRadius: 6, fontSize: 13, cursor: 'pointer',
+                      background: conditionData.maintenanceReport === opt ? 'var(--weui-brand)' : 'var(--weui-BG-1)',
+                      color: conditionData.maintenanceReport === opt ? '#fff' : 'var(--weui-FG-0)' }}>
+                    {opt}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {conditionData.maintenanceReport === '有' && (
+              <div className="weui-cell" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+                <div style={{ fontSize: 13, color: 'var(--weui-FG-1)', marginBottom: 6 }}>维保报告照片（1-6张）</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+                  <div onClick={() => {}} style={{ aspectRatio: '1', background: 'var(--weui-BG-1)', borderRadius: 6, border: '1px dashed var(--weui-FG-2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, cursor: 'pointer' }}>
+                    <Camera size={18} color="var(--weui-FG-2)" />
+                    <span style={{ fontSize: 10, color: 'var(--weui-FG-1)' }}>上传</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* 车况描述 */}
             <div className="weui-cell">
               <div className="weui-cell__bd">
-                <textarea className="weui-textarea" placeholder="请描述车况（限200字）" rows={3} maxLength={200} style={{ fontSize: 14 }} />
-                <div className="weui-textarea-counter"><span>0</span>/200</div>
+                <textarea className="weui-textarea" placeholder="请描述车况（限200字）" rows={3} maxLength={200} style={{ fontSize: 14 }}
+                  value={conditionData.conditionDesc} onChange={(e) => setConditionData(d => ({ ...d, conditionDesc: e.target.value }))} />
+                <div className="weui-textarea-counter"><span>{conditionData.conditionDesc.length}</span>/200</div>
               </div>
             </div>
           </div>

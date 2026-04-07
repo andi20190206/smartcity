@@ -134,11 +134,9 @@ export default function ApprovalDetail() {
       }}>
         {[
           { icon: <FileText size={14} color="var(--blue)" />, label: '审批单号', value: record.id },
-          { icon: <FileText size={14} color="var(--text-2)" />, label: '关联单号', value: record.bizOrderId },
+          { icon: <FileText size={14} color="var(--text-2)" />, label: '关联单号', value: record.bizOrderId, isLink: true },
           { icon: <User size={14} color="var(--text-2)" />, label: '申请人', value: `${record.applicant}（${record.applicantRole}）` },
           { icon: <Building2 size={14} color="var(--text-2)" />, label: '经销公司', value: record.dealerCompany },
-          ...(record.plateNo ? [{ icon: <Car size={14} color="var(--blue)" />, label: '车牌号', value: record.plateNo }] : []),
-          ...(record.brandModel ? [{ icon: <Car size={14} color="var(--text-2)" />, label: '车型', value: record.brandModel }] : []),
         ].map((item, i, arr) => (
           <div key={item.label} style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -148,7 +146,14 @@ export default function ApprovalDetail() {
               {item.icon}
               <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{item.label}</span>
             </div>
-            <span style={{ fontSize: 13, color: 'var(--text-0)', fontWeight: 500, maxWidth: '55%', textAlign: 'right', wordBreak: 'break-all' }}>{item.value}</span>
+            {'isLink' in item && item.isLink ? (
+              <a href={`/pc/approval/${item.value}`} target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: 13, color: 'var(--blue)', fontWeight: 500, textDecoration: 'underline' }}>
+                {item.value}
+              </a>
+            ) : (
+              <span style={{ fontSize: 13, color: 'var(--text-0)', fontWeight: 500, maxWidth: '55%', textAlign: 'right', wordBreak: 'break-all' }}>{item.value}</span>
+            )}
           </div>
         ))}
       </div>
@@ -165,12 +170,11 @@ export default function ApprovalDetail() {
               <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 4 }}>{record.advanceDetail.registerDate} | {record.advanceDetail.condition}</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--brand)' }}>{record.advanceDetail.plateNo}</div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: '1px solid var(--border)' }}>
               {[
-                { label: '车辆状态', value: record.advanceDetail.vehicleStatus },
-                { label: '在门店库', value: record.advanceDetail.warehouseInfo },
-                { label: '过户状态', value: record.advanceDetail.transferStatus },
-                { label: '车款', value: record.advanceDetail.paymentType },
+                { label: '库存状态', value: record.advanceDetail.stockStatus },
+                { label: '库存地点', value: record.advanceDetail.stockLocation },
+                { label: '签注状态', value: record.advanceDetail.endorseStatus },
               ].map((item) => (
                 <div key={item.label} style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid var(--border)' }}>
                   <div style={{ fontSize: 10, color: 'var(--text-2)', marginBottom: 4 }}>{item.label}</div>
@@ -189,7 +193,6 @@ export default function ApprovalDetail() {
               { label: '合同价：', value: `${record.advanceDetail.contractPrice.toLocaleString()}元`, color: 'var(--brand)', bold: true },
               { label: '申请垫款：', value: `${record.advanceDetail.applyAdvance.toLocaleString()}元`, color: 'var(--brand)', bold: true },
               ...(record.advanceDetail.regionTotalAdvance ? [{ label: '区域总垫身', value: record.advanceDetail.regionTotalAdvance, color: 'var(--text-0)', bold: false }] : []),
-              { label: '成交价', value: `${record.advanceDetail.dealPrice.toLocaleString()}元`, color: 'var(--text-0)', bold: false },
             ].map((item, i, arr) => (
               <div key={item.label} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',

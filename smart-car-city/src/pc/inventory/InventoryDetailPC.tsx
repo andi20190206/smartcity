@@ -1,9 +1,10 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Tag, Button, Descriptions, Table, Space, Badge, Timeline, Card } from 'antd'
+import { Tag, Button, Table, Space, Badge, Timeline, Modal, Form, Input, Select, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import {
-  ArrowLeftOutlined, EnvironmentOutlined, WarningOutlined,
-  CheckCircleOutlined, ClockCircleOutlined,
+  ArrowLeftOutlined, EnvironmentOutlined,
+  CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, CheckCircleFilled,
 } from '@ant-design/icons'
 import {
   mockSupervisedVehicles, mockAlertRecords, mockVehicleUseRecords,
@@ -17,10 +18,49 @@ const supervisionStatusColorMap: Record<string, string> = {
   pending: 'warning', supervising: 'success', released: 'default',
 }
 
+interface ObdBindRecord {
+  id: string
+  obdCode: string
+  operator: string
+  time: string
+  result: 'success' | 'fail'
+  reason?: string
+}
+
+/* mock OBD绑定历史 */
+const mockObdRecords: ObdBindRecord[] = [
+  { id: 'OBD001', obdCode: 'OBD-20260301-A01', operator: '韩立', time: '2026-03-01 10:30:00', result: 'success' },
+  { id: 'OBD002', obdCode: 'OBD-20260228-B03', operator: '韩立', time: '2026-02-28 14:20:00', result: 'fail', reason: '设备编码不存在' },
+  { id: 'OBD003', obdCode: 'OBD-20260215-C05', operator: '陈伟', time: '2026-02-15 09:00:00', result: 'success' },
+  { id: 'OBD004', obdCode: 'OBD-20260210-A01', operator: '李明', time: '2026-02-10 16:45:00', result: 'fail', reason: '该OBD已绑定其他车辆' },
+]
+
+const warehouseOptions = [
+  { value: '智慧门店SM-A区', label: '智慧门店SM-A区' },
+  { value: '天河仓A区', label: '天河仓A区' },
+  { value: '福田仓B区', label: '福田仓B区' },
+  { value: '梅州仓', label: '梅州仓' },
+  { value: '番禺仓', label: '番禺仓' },
+]
+
 export default function InventoryDetailPC() {
   const { id } = useParams()
   const navigate = useNavigate()
   const vehicle = mockSupervisedVehicles.find((v) => v.id === id)
+
+  /* ---- 确认入库弹窗 ---- */
+  const [stockInOpen, setStockInOpen] = useState(false)
+  const [stockInWarehouse, setStockInWarehouse] = useState<string | undefined>()
+  const [stockInFailOpen, setStockInFailOpen] = useState(false)
+
+  /* ---- OBD绑定弹窗 ---- */
+  const [obdBindOpen, setObdBindOpen] = useState(false)
+  const [obdCode, setObdCode] = useState('')
+  const [obdReason, setObdReason] = useState('')
+  const [obdBindResult, setObdBindResult] = useState<'success' | 'fail' | null>(null)
+
+  /* ---- OBD绑定记录弹窗 ---- */
+  const [obdHistoryOpen, setObdHistoryOpen] = useState(false)
 
   if (!vehicle) {
     return (
@@ -33,6 +73,40 @@ export default function InventoryDetailPC() {
 
   const relatedAlerts = mockAlertRecords.filter((a) => a.plateNo === vehicle.plateNo)
   const relatedUse = mockVehicleUseRecords.filter((u) => u.plateNo === vehicle.plateNo)
+
+  /* ---- 确认入库 ---- */
+  const openStockIn = () => {
+    setStockInWarehouse(warehouseOptions[0].value)
+    setStockInOpen(true)
+  }
+  const handleStockIn = () => {
+    if (!stockInWarehouse) { message.warning('请选择待入仓库'); return }
+    // 模拟：50%概率失败
+    if (Math.random() > 0.5) {
+      setStockInOpen(false)
+      setStockInFailOpen(true)
+    } else {
+      message.success('入库成功')
+      setStockInOpen(false)
+    }
+  }
+
+  /* ---- OBD绑定 ---- */
+  const openObdBind = () => {
+    setObdCode('')
+    setObdReason('')
+    setObdBindResult(null)
+    setObdBindOpen(true)
+  }
+  const handleObdBind = () => {
+    if (!obdCode.trim()) { message.warning('请输入OBD编码'); return }
+    // 模拟绑定结果
+    const result = Math.random() > 0.5 ? 'success' : 'fail'
+    setObdBindResult(result)
+    if (result === 'success') {
+      message.success('OBD绑定成功')
+    }
+  }
 
   const alertColumns: ColumnsType<AlertRecord> = [
     {
@@ -73,6 +147,19 @@ export default function InventoryDetailPC() {
       },
     },
     { title: '用车时段', dataIndex: 'useDuration', key: 'useDuration', render: (v: string) => <span style={{ fontSize: 12, color: '#8c8c8c' }}>{v}</span> },
+  ]
+
+  const obdHistoryColumns: ColumnsType<ObdBindRecord> = [
+    { title: 'OBD编码', dataIndex: 'obdCode', key: 'obdCode', width: 180, render: (v: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 13 }}>{v}</span> },
+    { title: '操作人', dataIndex: 'operator', key: 'operator', width: 80 },
+    { title: '操作时间', dataIndex: 'time', key: 'time', width: 170, render: (v: string) => <span style={{ fontSize: 12, color: '#8c8c8c' }}>{v}</span> },
+    {
+      title: '绑定结果', dataIndex: 'result', key: 'result', width: 100,
+      render: (v: string) => v === 'success'
+        ? <Tag icon={<CheckCircleFilled />} color="success" style={{ borderRadius: 4 }}>绑定成功</Tag>
+        : <Tag icon={<CloseCircleOutlined />} color="error" style={{ borderRadius: 4 }}>绑定失败</Tag>,
+    },
+    { title: '失败原因', dataIndex: 'reason', key: 'reason', render: (v: string) => <span style={{ color: v ? '#ff4d4f' : '#bfbfbf' }}>{v || '-'}</span> },
   ]
 
   return (
@@ -153,35 +240,6 @@ export default function InventoryDetailPC() {
         </div>
       </div>
 
-      {/* 签注信息（仅库存金融车辆） */}
-      {vehicle.source === '库存金融' && (
-        <div className="detail-section">
-          <div className="detail-section-title">
-            签注信息
-            {vehicle.registrationStatus === 'pending' && (
-              <Button type="primary" size="small" style={{ marginLeft: 'auto' }}>确认签注</Button>
-            )}
-          </div>
-          <div className="detail-section-body">
-            <div className="info-grid">
-              {[
-                { label: '签注状态', value: vehicle.registrationStatusText || '-' },
-                { label: '原车主', value: vehicle.oldOwner || '-' },
-                { label: '签约时间', value: vehicle.signTime || '-' },
-                { label: '签注时间', value: vehicle.registrationTime || '-' },
-                { label: '垫款状态', value: vehicle.loanStatus || '-' },
-                { label: '回款状态', value: vehicle.repaymentStatus },
-              ].map((item) => (
-                <div key={item.label} className="info-item">
-                  <span className="info-label">{item.label}</span>
-                  <span className="info-value">{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* 监管状态流转 */}
       <div className="detail-section">
         <div className="detail-section-title">监管状态流转</div>
@@ -243,16 +301,149 @@ export default function InventoryDetailPC() {
       {/* 操作按钮 */}
       <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
         {vehicle.stockStatus === 'pending_in' && (
-          <Button type="primary" size="large">确认入库</Button>
+          <Button type="primary" size="large" onClick={openStockIn}>确认入库</Button>
         )}
         {vehicle.supervisionStatus === 'supervising' && (
-          <>
-            <Button size="large">用车申请</Button>
-            {!vehicle.deviceNo && <Button type="primary" size="large">OBD绑定</Button>}
-          </>
+          <Button size="large">用车申请</Button>
         )}
-        <Button size="large">OBD绑定记录</Button>
+        <Button type="primary" size="large" onClick={openObdBind}>OBD绑定</Button>
+        <Button size="large" onClick={() => setObdHistoryOpen(true)}>OBD绑定记录</Button>
       </div>
+
+      {/* ===== 确认入库弹窗 ===== */}
+      <Modal
+        title="车辆入库"
+        open={stockInOpen}
+        onCancel={() => setStockInOpen(false)}
+        footer={null}
+        width={480}
+        destroyOnClose
+      >
+        <div style={{ color: '#ff4d4f', fontSize: 13, marginBottom: 20 }}>
+          入库前请确保车辆在店，并已成功安装硬件OBD
+        </div>
+        <Form layout="horizontal" labelCol={{ span: 5 }} wrapperCol={{ span: 18 }}>
+          <Form.Item label={<span><span style={{ color: '#ff4d4f' }}>*</span>待入仓库</span>}>
+            <Select
+              value={stockInWarehouse}
+              onChange={setStockInWarehouse}
+              options={warehouseOptions}
+              suffixIcon={<span style={{ fontSize: 12 }}>›</span>}
+            />
+          </Form.Item>
+          <Form.Item label="入库地址">
+            <span style={{ color: '#595959' }}>广东广州市天河区酷狗音乐</span>
+          </Form.Item>
+        </Form>
+        <Button
+          type="primary" danger block size="large"
+          style={{ marginTop: 16, borderRadius: 8, height: 48, fontSize: 16, fontWeight: 500 }}
+          onClick={handleStockIn}
+        >
+          确认入库
+        </Button>
+      </Modal>
+
+      {/* ===== 入库失败弹窗 ===== */}
+      <Modal
+        open={stockInFailOpen}
+        onCancel={() => setStockInFailOpen(false)}
+        footer={null}
+        width={380}
+        centered
+        closable
+      >
+        <div style={{ textAlign: 'center', padding: '16px 0' }}>
+          <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>入库失败</div>
+          <div style={{ color: '#8c8c8c', marginBottom: 8 }}>入库失败</div>
+          <div style={{ color: '#ff4d4f', fontWeight: 500, marginBottom: 8 }}>原因：车辆实时定位不在电子围栏内</div>
+          <div style={{ color: '#8c8c8c', marginBottom: 24 }}>请联系市场相关人员处理</div>
+          <Button block size="large" onClick={() => setStockInFailOpen(false)}
+            style={{ borderRadius: 8, height: 44 }}
+          >
+            关闭
+          </Button>
+        </div>
+      </Modal>
+
+      {/* ===== OBD绑定弹窗 ===== */}
+      <Modal
+        title="车辆绑定OBD"
+        open={obdBindOpen}
+        onCancel={() => setObdBindOpen(false)}
+        footer={null}
+        width={520}
+        destroyOnClose
+      >
+        {/* 基本信息确认 */}
+        <div style={{ background: '#fafafa', borderRadius: 6, padding: '12px 16px', marginBottom: 16 }}>
+          <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 8 }}>基本信息确认</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 24px', fontSize: 14 }}>
+            <div><span style={{ color: '#8c8c8c', marginRight: 12 }}>VIN后4位</span><span style={{ fontWeight: 500 }}>{vehicle.vin.slice(-4)}</span></div>
+            <div><span style={{ color: '#8c8c8c', marginRight: 12 }}>车牌</span><span style={{ fontWeight: 500 }}>{vehicle.plateNo}</span></div>
+            <div><span style={{ color: '#8c8c8c', marginRight: 12 }}>归属门店</span><span>{vehicle.storeName}</span></div>
+            <div><span style={{ color: '#8c8c8c', marginRight: 12 }}>车商姓名</span><span>韩立</span></div>
+            <div><span style={{ color: '#8c8c8c', marginRight: 12 }}>手机号</span><span>13016044456</span></div>
+          </div>
+        </div>
+
+        {/* 硬件信息 */}
+        <div style={{ background: '#fafafa', borderRadius: 6, padding: '12px 16px', marginBottom: 20 }}>
+          <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 8 }}>硬件信息</div>
+          <Form layout="horizontal" labelCol={{ span: 4 }} wrapperCol={{ span: 19 }}>
+            <Form.Item label="OBD编码" style={{ marginBottom: 12 }}>
+              <Space>
+                <Input
+                  placeholder="请输入"
+                  value={obdCode}
+                  onChange={(e) => { setObdCode(e.target.value); setObdBindResult(null) }}
+                  style={{ width: 240 }}
+                />
+                {obdBindResult === 'fail' && (
+                  <span style={{ color: '#ff4d4f', fontSize: 13 }}><CloseCircleOutlined /> 绑定失败</span>
+                )}
+                {obdBindResult === 'success' && (
+                  <span style={{ color: '#52c41a', fontSize: 13 }}><CheckCircleFilled /> 绑定成功</span>
+                )}
+              </Space>
+            </Form.Item>
+            <Form.Item label="绑定原因" style={{ marginBottom: 0 }}>
+              <Input
+                placeholder="请输入(50字以内)"
+                maxLength={50}
+                value={obdReason}
+                onChange={(e) => setObdReason(e.target.value)}
+              />
+            </Form.Item>
+          </Form>
+        </div>
+
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          <Button size="large" style={{ width: 140, borderRadius: 6 }} onClick={() => setObdBindOpen(false)}>取消</Button>
+          <Button type="primary" size="large" style={{ width: 140, borderRadius: 6 }} onClick={handleObdBind}>确定</Button>
+        </div>
+      </Modal>
+
+      {/* ===== OBD绑定记录弹窗 ===== */}
+      <Modal
+        title="OBD绑定记录"
+        open={obdHistoryOpen}
+        onCancel={() => setObdHistoryOpen(false)}
+        footer={null}
+        width={700}
+        destroyOnClose
+      >
+        <div style={{ marginBottom: 12, fontSize: 13, color: '#8c8c8c' }}>
+          车牌：{vehicle.plateNo}　VIN：{vehicle.vin}
+        </div>
+        <Table
+          columns={obdHistoryColumns}
+          dataSource={mockObdRecords}
+          rowKey="id"
+          size="small"
+          pagination={false}
+        />
+      </Modal>
     </div>
   )
 }

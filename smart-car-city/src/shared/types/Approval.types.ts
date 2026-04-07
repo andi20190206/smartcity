@@ -103,13 +103,15 @@ export interface AdvanceApprovalDetail {
   vin: string
   registerDate: string
   condition: string
-  stockStatus: string      // 库存状态：待入库/在库等
-  stockLocation: string    // 库存地点
-  endorseStatus: string    // 签注状态：已签注/未签注
+  vehicleStatus: string    // 已成交/在售等
+  warehouseInfo: string    // 在门店库
+  transferStatus: string   // 过户状态：未接收等
+  paymentType: string      // 车款：付第三方等
   /** 金额信息 */
   contractPrice: number    // 合同价（元）
   applyAdvance: number     // 申请垫款（元）
   regionTotalAdvance?: string // 区域总垫身
+  dealPrice: number        // 成交价（元）
   /** 收款人信息 */
   sellerName: string
   sellerBank: string

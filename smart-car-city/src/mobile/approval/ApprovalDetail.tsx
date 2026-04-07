@@ -170,11 +170,12 @@ export default function ApprovalDetail() {
               <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 4 }}>{record.advanceDetail.registerDate} | {record.advanceDetail.condition}</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--brand)' }}>{record.advanceDetail.plateNo}</div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', borderBottom: '1px solid var(--border)' }}>
               {[
-                { label: '库存状态', value: record.advanceDetail.stockStatus },
-                { label: '库存地点', value: record.advanceDetail.stockLocation },
-                { label: '签注状态', value: record.advanceDetail.endorseStatus },
+                { label: '车辆状态', value: record.advanceDetail.vehicleStatus },
+                { label: '在门店库', value: record.advanceDetail.warehouseInfo },
+                { label: '过户状态', value: record.advanceDetail.transferStatus },
+                { label: '车款', value: record.advanceDetail.paymentType },
               ].map((item) => (
                 <div key={item.label} style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid var(--border)' }}>
                   <div style={{ fontSize: 10, color: 'var(--text-2)', marginBottom: 4 }}>{item.label}</div>

@@ -110,8 +110,13 @@ export default function ApprovalDetailPC() {
           <Descriptions column={3} size="small" labelStyle={{ color: '#8c8c8c', fontSize: 13 }} contentStyle={{ fontSize: 13 }}>
             <Descriptions.Item label="审批单号">{record.id}</Descriptions.Item>
             <Descriptions.Item label="关联单号">
-              <a href={`/pc/approval/${record.bizOrderId}`} target="_blank" rel="noopener noreferrer"
-                style={{ color: '#1677ff', cursor: 'pointer', textDecoration: 'underline' }}>
+              <a onClick={() => {
+                const bid = record.bizOrderId
+                if (bid.startsWith('CG-')) navigate(`/pc/purchase/${bid}`)
+                else if (bid.startsWith('DK-')) navigate(`/pc/fund/advance/${bid}`)
+                else if (bid.startsWith('XS-')) navigate(`/pc/sales/${bid}`)
+                else if (bid.startsWith('HT-')) navigate(`/pc/contract/${bid}`)
+              }} style={{ color: '#1677ff', cursor: 'pointer', textDecoration: 'underline' }}>
                 {record.bizOrderId}
               </a>
             </Descriptions.Item>
@@ -137,7 +142,7 @@ export default function ApprovalDetailPC() {
             {record.type === 'purchase' && record.purchaseMode && (
               <Descriptions.Item label="采购类型">
                 <Tag color={record.purchaseMode === 'batch' ? 'blue' : 'green'} style={{ borderRadius: 4 }}>
-                  {record.purchaseMode === 'batch' ? `多台采购（${record.vehiclePricingList?.length || 0}台）` : '单台采购'}
+                  {record.purchaseMode === 'batch' ? `批量采购（${record.vehiclePricingList?.length || 0}台）` : `单台采购 ${record.plateNo || ''}`}
                 </Tag>
               </Descriptions.Item>
             )}
@@ -156,10 +161,11 @@ export default function ApprovalDetailPC() {
                 <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 4 }}>{record.advanceDetail.registerDate} | {record.advanceDetail.condition}</div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: '#E8352E' }}>{record.advanceDetail.plateNo}</div>
               </div>
-              <Descriptions column={3} size="small" bordered labelStyle={{ color: '#8c8c8c', fontSize: 12, textAlign: 'center' }} contentStyle={{ fontSize: 12, fontWeight: 600, textAlign: 'center' }}>
-                <Descriptions.Item label="库存状态">{record.advanceDetail.stockStatus}</Descriptions.Item>
-                <Descriptions.Item label="库存地点">{record.advanceDetail.stockLocation}</Descriptions.Item>
-                <Descriptions.Item label="签注状态">{record.advanceDetail.endorseStatus}</Descriptions.Item>
+              <Descriptions column={4} size="small" bordered labelStyle={{ color: '#8c8c8c', fontSize: 12, textAlign: 'center' }} contentStyle={{ fontSize: 12, fontWeight: 600, textAlign: 'center' }}>
+                <Descriptions.Item label="车辆状态">{record.advanceDetail.vehicleStatus}</Descriptions.Item>
+                <Descriptions.Item label="在门店库">{record.advanceDetail.warehouseInfo}</Descriptions.Item>
+                <Descriptions.Item label="过户状态">{record.advanceDetail.transferStatus}</Descriptions.Item>
+                <Descriptions.Item label="车款">{record.advanceDetail.paymentType}</Descriptions.Item>
               </Descriptions>
             </div>
           </div>
@@ -175,6 +181,7 @@ export default function ApprovalDetailPC() {
                   <Descriptions.Item label="申请垫款">
                     <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 700, color: '#E8352E', fontSize: 16 }}>{record.advanceDetail.applyAdvance.toLocaleString()}元</span>
                   </Descriptions.Item>
+                  <Descriptions.Item label="成交价">{record.advanceDetail.dealPrice.toLocaleString()}元</Descriptions.Item>
                 </Descriptions>
               </div>
             </div>

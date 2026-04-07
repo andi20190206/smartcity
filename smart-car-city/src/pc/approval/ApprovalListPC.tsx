@@ -209,7 +209,14 @@ export default function ApprovalListPC() {
       ellipsis: true,
       render: (summary: string, record: ApprovalRecord) => (
         <div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: '#1a1a2e' }}>{summary}</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: '#1a1a2e' }}>
+            {record.type === 'purchase' && record.purchaseMode && (
+              <Tag color={record.purchaseMode === 'batch' ? 'blue' : 'green'} style={{ borderRadius: 4, marginRight: 6, fontSize: 11 }}>
+                {record.purchaseMode === 'batch' ? `批量采购 ${record.vehiclePricingList?.length || 0}台` : `单台采购 ${record.plateNo || ''}`}
+              </Tag>
+            )}
+            {summary}
+          </div>
           <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 2 }}>关联单号: {record.bizOrderId}</div>
         </div>
       ),

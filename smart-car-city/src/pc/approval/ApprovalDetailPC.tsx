@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Tag, Button, Steps, Descriptions, Input, Space, Modal, Timeline, Empty, Select, message } from 'antd'
+import { Tag, Button, Steps, Descriptions, Input, Space, Modal, Timeline, Empty, Select, message, Table, Alert, Tooltip } from 'antd'
 import {
   ArrowLeftOutlined, CheckCircleOutlined, CloseCircleOutlined,
   ClockCircleOutlined, FileTextOutlined,
   UserOutlined, BankOutlined, CarOutlined, SwapOutlined,
+  DollarOutlined, InfoCircleOutlined, WarningOutlined,
 } from '@ant-design/icons'
 import { mockApprovals } from '../../shared/mock/approvalMock'
 import { approvalTypeText } from '../../shared/constants/approvalStatusMap'
+import type { VehiclePricingInfo } from '../../shared/types/Approval.types'
 
 const { TextArea } = Input
 
@@ -125,6 +127,150 @@ export default function ApprovalDetailPC() {
           </Descriptions>
         </div>
       </div>
+
+      {/* 门店授信额度 - 仅采购审批 */}
+      {record.type === 'purchase' && record.dealerCredit && (
+        <div className="detail-section">
+          <div className="detail-section-title"><BankOutlined /> 门店授信额度</div>
+          <div className="detail-section-body">
+            <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+              {[
+                { label: '最大额度', value: record.dealerCredit.maxQuota, color: '#1a1a2e', bg: '#f5f5f5' },
+                { label: '在途额度', value: record.dealerCredit.inTransitQuota, color: '#fa8c16', bg: '#fff7e6' },
+                { label: '可用额度', value: record.dealerCredit.availableQuota, color: record.dealerCredit.availableQuota < 0 ? '#ff4d4f' : '#52c41a', bg: record.dealerCredit.availableQuota < 0 ? '#fff2f0' : '#f6ffed' },
+              ].map((item) => (
+                <div key={item.label} style={{
+                  flex: 1, padding: '16px 20px', borderRadius: 12, background: item.bg,
+                  textAlign: 'center',
+                }}>
+                  <div style={{ fontSize: 13, color: '#8c8c8c', marginBottom: 8 }}>{item.label}</div>
+                  <div style={{ fontSize: 24, fontWeight: 700, fontFamily: "'DM Sans', monospace", color: item.color }}>
+                    {item.value.toFixed(2)}
+                    <span style={{ fontSize: 13, fontWeight: 400, color: '#8c8c8c', marginLeft: 2 }}>万</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Descriptions column={2} size="small" labelStyle={{ color: '#8c8c8c', fontSize: 13 }} contentStyle={{ fontSize: 13 }}>
+              <Descriptions.Item label="门店名称">{record.dealerCredit.storeName}</Descriptions.Item>
+              <Descriptions.Item label="本次采购占用">
+                <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 600, color: '#1890ff' }}>
+                  {record.dealerCredit.currentPurchaseAmount.toFixed(2)}万
+                </span>
+              </Descriptions.Item>
+              <Descriptions.Item label="审批后预计可用">
+                <span style={{
+                  fontFamily: "'DM Sans', monospace", fontWeight: 600,
+                  color: record.dealerCredit.estimatedAvailableQuota < 0 ? '#ff4d4f' : '#52c41a',
+                }}>
+                  {record.dealerCredit.estimatedAvailableQuota.toFixed(2)}万
+                </span>
+              </Descriptions.Item>
+            </Descriptions>
+            {record.dealerCredit.estimatedAvailableQuota < 0 && (
+              <Alert
+                type="error"
+                showIcon
+                icon={<WarningOutlined />}
+                message="额度预警"
+                description="本次采购将超出门店可用额度，请谨慎审批"
+                style={{ marginTop: 12, borderRadius: 8 }}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 车辆定价信息 - 仅采购审批 */}
+      {record.type === 'purchase' && record.vehiclePricingList && record.vehiclePricingList.length > 0 && (
+        <div className="detail-section">
+          <div className="detail-section-title">
+            <DollarOutlined /> 车辆定价信息
+            {record.vehiclePricingList.length > 1 && (
+              <Tag color="blue" style={{ marginLeft: 8, borderRadius: 4 }}>共{record.vehiclePricingList.length}台</Tag>
+            )}
+          </div>
+          <div className="detail-section-body">
+            {record.vehiclePricingList.some((v: VehiclePricingInfo) => v.pricingStatus === 'no_price') && (
+              <Alert
+                type="warning"
+                showIcon
+                icon={<InfoCircleOutlined />}
+                message="部分车辆暂无建议采购价"
+                description="定价接口未返回部分车型的建议价格，请审批人结合市场行情自行评估采购价格合理性"
+                style={{ marginBottom: 16, borderRadius: 8 }}
+              />
+            )}
+            <Table
+              dataSource={record.vehiclePricingList}
+              rowKey="vin"
+              pagination={false}
+              size="middle"
+              columns={[
+                {
+                  title: '车牌号',
+                  dataIndex: 'plateNo',
+                  width: 110,
+                  render: (text: string) => <span style={{ fontWeight: 500 }}>{text}</span>,
+                },
+                {
+                  title: '车型',
+                  dataIndex: 'brandModel',
+                  ellipsis: true,
+                },
+                {
+                  title: '采购价（万）',
+                  dataIndex: 'purchasePrice',
+                  width: 120,
+                  align: 'right' as const,
+                  render: (val: number) => (
+                    <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 700, fontSize: 15 }}>
+                      {val.toFixed(2)}
+                    </span>
+                  ),
+                },
+                {
+                  title: '建议采购价（万）',
+                  dataIndex: 'suggestedPrice',
+                  width: 150,
+                  align: 'right' as const,
+                  render: (_: number | null, row: VehiclePricingInfo) => {
+                    if (row.pricingStatus === 'no_price' || row.suggestedPrice === null) {
+                      return (
+                        <Tooltip title="定价接口未返回该车型建议价，请自行评估">
+                          <Tag color="warning" style={{ borderRadius: 4 }}>暂无定价</Tag>
+                        </Tooltip>
+                      )
+                    }
+                    return (
+                      <span style={{ fontFamily: "'DM Sans', monospace", fontWeight: 700, fontSize: 15, color: '#1890ff' }}>
+                        {row.suggestedPrice.toFixed(2)}
+                      </span>
+                    )
+                  },
+                },
+                {
+                  title: '偏差率',
+                  dataIndex: 'deviationRate',
+                  width: 130,
+                  align: 'center' as const,
+                  render: (_: number | undefined, row: VehiclePricingInfo) => {
+                    if (row.pricingStatus === 'no_price' || row.deviationRate === undefined) {
+                      return <span style={{ color: '#bfbfbf' }}>—</span>
+                    }
+                    const color = row.deviationRate < -10 ? '#ff4d4f' : row.deviationRate < 0 ? '#52c41a' : '#fa8c16'
+                    return (
+                      <Tag color={row.deviationRate < -10 ? 'error' : row.deviationRate < 0 ? 'success' : 'warning'} style={{ borderRadius: 4 }}>
+                        {row.deviationRate > 0 ? '+' : ''}{row.deviationRate.toFixed(2)}%
+                      </Tag>
+                    )
+                  },
+                },
+              ]}
+            />
+          </div>
+        </div>
+      )}
 
       {/* 审批流程 */}
       <div className="detail-section">

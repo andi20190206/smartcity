@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { ChevronLeft, CheckCircle, XCircle, Clock, FileText, User, Building2, Car, Send, ArrowRightLeft, ChevronDown } from 'lucide-react'
+import { ChevronLeft, CheckCircle, XCircle, Clock, FileText, User, Building2, Car, Send, ArrowRightLeft, ChevronDown, AlertTriangle, DollarSign, TrendingUp, TrendingDown, Minus, Info } from 'lucide-react'
 import { mockApprovals } from '../../shared/mock/approvalMock'
 import { approvalStatusTagColor, approvalTypeTagColor } from '../../shared/constants/approvalStatusMap'
+import type { VehiclePricingInfo } from '../../shared/types/Approval.types'
 
 const transferCandidates = [
   { id: 'u1', name: '陈经理', role: '经销公司管理员', company: '广州天河旗舰店' },
@@ -140,6 +141,145 @@ export default function ApprovalDetail() {
           </div>
         ))}
       </div>
+      {/* 门店授信额度 - 仅采购审批 */}
+      {record.type === 'purchase' && record.dealerCredit && (
+        <>
+          <div className="section-hd">门店授信额度</div>
+          <div className="anim d2" style={{
+            margin: '0 16px 12px', background: '#fff', borderRadius: 14,
+            border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden',
+          }}>
+            <div style={{
+              padding: '14px 16px', background: 'linear-gradient(135deg, rgba(0,122,255,0.06) 0%, rgba(88,86,214,0.04) 100%)',
+              borderBottom: '1px solid var(--border)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                <Building2 size={14} color="var(--blue)" />
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-0)' }}>{record.dealerCredit.storeName}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[
+                  { label: '最大额度', value: record.dealerCredit.maxQuota, color: 'var(--text-0)' },
+                  { label: '在途额度', value: record.dealerCredit.inTransitQuota, color: 'var(--orange)' },
+                  { label: '可用额度', value: record.dealerCredit.availableQuota, color: record.dealerCredit.availableQuota < 0 ? 'var(--red)' : 'var(--green)' },
+                ].map((item) => (
+                  <div key={item.label} style={{ flex: 1, textAlign: 'center', padding: '8px 4px', background: 'rgba(255,255,255,0.8)', borderRadius: 8 }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 4 }}>{item.label}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-num)', color: item.color }}>{item.value.toFixed(2)}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-2)' }}>万</span></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-2)' }}>本次采购占用</span>
+              <span style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-num)', color: 'var(--brand)' }}>{record.dealerCredit.currentPurchaseAmount.toFixed(2)}万</span>
+            </div>
+            <div style={{ padding: '0 16px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-2)' }}>审批后预计可用</span>
+              <span style={{
+                fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-num)',
+                color: record.dealerCredit.estimatedAvailableQuota < 0 ? 'var(--red)' : 'var(--green)',
+              }}>{record.dealerCredit.estimatedAvailableQuota.toFixed(2)}万</span>
+            </div>
+            {record.dealerCredit.estimatedAvailableQuota < 0 && (
+              <div style={{
+                margin: '0 12px 10px', padding: '8px 10px', borderRadius: 8,
+                background: 'var(--red-bg)', display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <AlertTriangle size={13} color="var(--red)" />
+                <span style={{ fontSize: 12, color: 'var(--red)' }}>本次采购将超出可用额度，请谨慎审批</span>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* 车辆定价信息 - 仅采购审批 */}
+      {record.type === 'purchase' && record.vehiclePricingList && record.vehiclePricingList.length > 0 && (
+        <>
+          <div className="section-hd">车辆定价信息{record.vehiclePricingList.length > 1 ? `（共${record.vehiclePricingList.length}台）` : ''}</div>
+          {record.vehiclePricingList.map((v: VehiclePricingInfo, idx: number) => (
+            <div key={v.vin} className="anim d3" style={{
+              margin: `0 16px ${idx < record.vehiclePricingList!.length - 1 ? 8 : 12}px`,
+              background: '#fff', borderRadius: 14,
+              border: v.pricingStatus === 'no_price' ? '1px solid rgba(255,149,0,0.3)' : '1px solid var(--border)',
+              boxShadow: 'var(--shadow-sm)', overflow: 'hidden',
+            }}>
+              {/* 车辆标题 */}
+              {record.vehiclePricingList!.length > 1 && (
+                <div style={{
+                  padding: '10px 16px', background: 'rgba(0,0,0,0.02)',
+                  borderBottom: '1px solid var(--border)',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                }}>
+                  <div style={{
+                    width: 20, height: 20, borderRadius: '50%', background: 'var(--blue-bg)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, fontWeight: 700, color: 'var(--blue)',
+                  }}>{idx + 1}</div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-0)' }}>{v.plateNo}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-2)', flex: 1 }}>{v.brandModel}</span>
+                </div>
+              )}
+              {/* 价格对比 */}
+              <div style={{ padding: '12px 16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <DollarSign size={13} color="var(--text-2)" />
+                    <span style={{ fontSize: 13, color: 'var(--text-2)' }}>采购价</span>
+                  </div>
+                  <span style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-num)', color: 'var(--text-0)' }}>{v.purchasePrice.toFixed(2)}万</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: v.pricingStatus === 'no_price' ? 8 : 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <TrendingUp size={13} color="var(--blue)" />
+                    <span style={{ fontSize: 13, color: 'var(--text-2)' }}>建议采购价</span>
+                  </div>
+                  {v.pricingStatus === 'priced' && v.suggestedPrice !== null ? (
+                    <span style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-num)', color: 'var(--blue)' }}>{v.suggestedPrice.toFixed(2)}万</span>
+                  ) : (
+                    <span style={{
+                      fontSize: 12, padding: '2px 8px', borderRadius: 6,
+                      background: 'var(--orange-bg)', color: 'var(--orange)', fontWeight: 600,
+                    }}>暂无定价</span>
+                  )}
+                </div>
+                {/* 偏差率 */}
+                {v.pricingStatus === 'priced' && v.deviationRate !== undefined && (
+                  <div style={{
+                    marginTop: 8, padding: '6px 10px', borderRadius: 8,
+                    background: v.deviationRate < -10 ? 'var(--red-bg)' : v.deviationRate < 0 ? 'var(--green-bg)' : 'var(--orange-bg)',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}>
+                    {v.deviationRate < 0 ? <TrendingDown size={13} color="var(--green)" /> : v.deviationRate > 0 ? <TrendingUp size={13} color="var(--orange)" /> : <Minus size={13} color="var(--text-2)" />}
+                    <span style={{
+                      fontSize: 12, fontWeight: 500,
+                      color: v.deviationRate < -10 ? 'var(--red)' : v.deviationRate < 0 ? 'var(--green)' : 'var(--orange)',
+                    }}>
+                      偏差率: {v.deviationRate > 0 ? '+' : ''}{v.deviationRate.toFixed(2)}%
+                      {v.deviationRate < -10 ? '（偏差较大，请关注）' : v.deviationRate < 0 ? '（低于建议价）' : v.deviationRate > 0 ? '（高于建议价）' : ''}
+                    </span>
+                  </div>
+                )}
+                {/* 无定价提示 */}
+                {v.pricingStatus === 'no_price' && (
+                  <div style={{
+                    padding: '8px 10px', borderRadius: 8,
+                    background: 'rgba(255,149,0,0.06)', border: '1px solid rgba(255,149,0,0.15)',
+                    display: 'flex', alignItems: 'flex-start', gap: 6,
+                  }}>
+                    <Info size={13} color="var(--orange)" style={{ flexShrink: 0, marginTop: 1 }} />
+                    <span style={{ fontSize: 12, color: 'var(--orange)', lineHeight: 1.5 }}>
+                      定价接口未返回该车型建议价，请审批人结合市场行情自行评估采购价格合理性
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
       {/* 审批流程 */}
       <div className="section-hd">审批流程</div>
       <div className="anim d3" style={{

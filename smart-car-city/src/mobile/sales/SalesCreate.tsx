@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronDown, Camera, Plus, Trash2, CheckCircle, Search, FileText } from 'lucide-react'
+import { ChevronLeft, ChevronDown, Camera, Plus, Trash2, CheckCircle, Search, FileText, CreditCard, Scan, Loader, X } from 'lucide-react'
 
 const stepTitles = ['车辆信息', '买家信息', '付款信息', '签名附件']
 
@@ -52,6 +52,44 @@ export default function SalesCreate() {
   const [buyerSign, setBuyerSign] = useState(false)
   // 测试数据类型循环
   const [testTypeIndex, setTestTypeIndex] = useState(0)
+
+  // 银行卡OCR
+  const [bankCardImage, setBankCardImage] = useState<string | null>(null)
+  const [ocrScanning, setOcrScanning] = useState(false)
+  const [ocrDone, setOcrDone] = useState(false)
+  const bankCardInputRef = useRef<HTMLInputElement>(null)
+
+  /** 模拟银行卡OCR识别 */
+  const handleBankCardOCR = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setBankCardImage(e.target?.result as string)
+      setOcrScanning(true)
+      setOcrDone(false)
+      // 模拟OCR识别延迟
+      setTimeout(() => {
+        setOcrScanning(false)
+        setOcrDone(true)
+        // 模拟OCR识别结果 — 自动回填付款人信息
+        setPayerData((prev) => ({
+          ...prev,
+          name: buyerData.name || '刘伟',
+          idNo: buyerData.idNo || '440106199201011234',
+          cardNo: '6222 0210 0100 1234 567',
+          bank: '中国工商银行广州天河支行',
+          phone: buyerData.phone || '13900001111',
+        }))
+      }, 1500)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const clearBankCard = () => {
+    setBankCardImage(null)
+    setOcrDone(false)
+    setOcrScanning(false)
+    setPayerData((prev) => ({ ...prev, cardNo: '', bank: '' }))
+  }
 
   const selectedVehicles = vehicles.filter((v) => v.selected)
   const totalContract = selectedVehicles.reduce((s, v) => s + (parseFloat(v.contractPrice) || 0), 0)
@@ -329,6 +367,79 @@ export default function SalesCreate() {
 
           {payerIsBuyer && (
             <>
+              <div className="section-hd">银行卡上传（OCR自动识别）</div>
+              <div style={{ padding: '0 16px 12px' }}>
+                <input ref={bankCardInputRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleBankCardOCR(f); e.target.value = '' }} />
+                {!bankCardImage ? (
+                  <div onClick={() => bankCardInputRef.current?.click()} style={{
+                    background: '#fff', borderRadius: 14, border: '2px dashed var(--border-strong)',
+                    padding: '24px 16px', cursor: 'pointer', textAlign: 'center',
+                    transition: 'all 0.2s',
+                  }}>
+                    <div style={{
+                      width: 56, height: 56, borderRadius: 16, margin: '0 auto 12px',
+                      background: 'var(--blue-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <CreditCard size={28} color="var(--blue)" />
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-0)', marginBottom: 4 }}>拍摄/上传银行卡</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-2)' }}>系统将自动识别卡号、开户行等信息并回填</div>
+                    <div style={{
+                      marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6,
+                      padding: '8px 20px', borderRadius: 20, background: 'var(--blue)', color: '#fff',
+                      fontSize: 13, fontWeight: 600,
+                    }}>
+                      <Camera size={15} />拍照识别
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    background: '#fff', borderRadius: 14, border: '1px solid var(--border)',
+                    overflow: 'hidden', boxShadow: 'var(--shadow-sm)',
+                  }}>
+                    <div style={{ position: 'relative' }}>
+                      <img src={bankCardImage} alt="银行卡" style={{
+                        width: '100%', height: 180, objectFit: 'cover', display: 'block',
+                      }} />
+                      {ocrScanning && (
+                        <div style={{
+                          position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)',
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10,
+                        }}>
+                          <Loader size={28} color="#fff" style={{ animation: 'spin 1s linear infinite' }} />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Scan size={16} color="#fff" />
+                            <span style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>OCR识别中...</span>
+                          </div>
+                        </div>
+                      )}
+                      {!ocrScanning && (
+                        <button onClick={clearBankCard} style={{
+                          position: 'absolute', top: 8, right: 8,
+                          width: 28, height: 28, borderRadius: '50%',
+                          background: 'rgba(0,0,0,0.5)', border: 'none', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <X size={16} color="#fff" />
+                        </button>
+                      )}
+                    </div>
+                    {ocrDone && (
+                      <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                          <CheckCircle size={14} color="var(--green)" />
+                          <span style={{ fontSize: 12, color: 'var(--green)', fontWeight: 600 }}>识别成功，已自动回填付款人信息</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-2)' }}>
+                          卡号: {payerData.cardNo} · {payerData.bank}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="section-hd">收款账户信息</div>
               {buyerType === '个人' && (
                 <div className="weui-cells">
@@ -390,12 +501,16 @@ export default function SalesCreate() {
                       </div>
                     </div>
                   </div>
-                  {/* 银行卡照片 */}
+                  {/* 银行卡照片（支持OCR识别） */}
                   <div style={{ padding: '8px 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-                    {['上传银行卡正面', '上传银行卡正面'].map((label, i) => (
+                    {['银行卡正面（OCR识别）', '银行卡反面'].map((label, i) => (
                       <div key={i} className="upload-area" style={{ aspectRatio: '3/2', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                        <Camera size={24} color="var(--text-3)" />
-                        <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{label}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Camera size={20} color="var(--text-3)" />
+                          {i === 0 && <Scan size={14} color="var(--blue)" />}
+                        </div>
+                        <span style={{ fontSize: 11, color: 'var(--text-2)', textAlign: 'center' }}>{label}</span>
+                        {i === 0 && <span style={{ fontSize: 9, color: 'var(--blue)', fontWeight: 600 }}>自动识别卡号</span>}
                       </div>
                     ))}
                   </div>
@@ -543,10 +658,14 @@ export default function SalesCreate() {
                     </div>
                   </div>
                   <div style={{ padding: '8px 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-                    {['上传银行卡正面', '上传银行卡正面'].map((label, i) => (
+                    {['银行卡正面（OCR识别）', '银行卡反面'].map((label, i) => (
                       <div key={i} className="upload-area" style={{ aspectRatio: '3/2', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                        <Camera size={24} color="var(--text-3)" />
-                        <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{label}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Camera size={20} color="var(--text-3)" />
+                          {i === 0 && <Scan size={14} color="var(--blue)" />}
+                        </div>
+                        <span style={{ fontSize: 11, color: 'var(--text-2)', textAlign: 'center' }}>{label}</span>
+                        {i === 0 && <span style={{ fontSize: 9, color: 'var(--blue)', fontWeight: 600 }}>自动识别卡号</span>}
                       </div>
                     ))}
                   </div>

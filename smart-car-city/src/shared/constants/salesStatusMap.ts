@@ -1,6 +1,5 @@
 export const salesStatusTabs = [
   { key: 'all', title: '全部' },
-  { key: 'draft', title: '草稿' },
   { key: 'pending_approval', title: '待审批' },
   { key: 'approving', title: '审批中' },
   { key: 'approved', title: '审批通过' },

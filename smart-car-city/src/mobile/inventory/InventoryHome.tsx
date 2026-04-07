@@ -3,32 +3,45 @@ import { useNavigate } from 'react-router-dom'
 import {
   ChevronLeft, ChevronRight, Warehouse, Shield, MapPin, Wifi, WifiOff,
   AlertTriangle, Camera, CameraOff, Clock, Search, Filter, Package,
-  FileCheck, Bell, ClipboardList,
+  FileCheck, Bell, ClipboardList, X, CheckCircle, XCircle, Phone,
+  Upload, Tag,
 } from 'lucide-react'
 import { mockSupervisedVehicles, mockAlertRecords, mockVehicleUseRecords, mockInventoryChecks } from '../../shared/mock/inventoryMock'
-import { stockStatusTagColor, supervisionStatusTagColor, alertLevelTagColor } from '../../shared/constants/inventoryStatusMap'
+import { stockStatusTagColor, supervisionStatusTagColor, alertLevelTagColor, salesFlowTabs, salesFlowTagColor } from '../../shared/constants/inventoryStatusMap'
+import type { SupervisedVehicle } from '../../shared/types/Inventory.types'
 
 type SectionKey = 'vehicles' | 'alerts' | 'use' | 'check'
 
 export default function InventoryHome() {
   const navigate = useNavigate()
   const [activeSection, setActiveSection] = useState<SectionKey>('vehicles')
-  const [stockFilter, setStockFilter] = useState('all')
+  const [salesFlowFilter, setSalesFlowFilter] = useState('all')
   const [searchText, setSearchText] = useState('')
+
+  // 入库弹窗
+  const [entryModal, setEntryModal] = useState<SupervisedVehicle | null>(null)
+  const [entryFailed, setEntryFailed] = useState(false)
+  // 上架弹窗
+  const [listingModal, setListingModal] = useState<SupervisedVehicle | null>(null)
+  const [listingPrice, setListingPrice] = useState('')
+  const [hasReport, setHasReport] = useState<'有' | '无'>('有')
+  const [listingRemark, setListingRemark] = useState('')
 
   const stats = useMemo(() => {
     const total = mockSupervisedVehicles.length
     const inStock = mockSupervisedVehicles.filter((v) => v.stockStatus === 'in_stock').length
     const supervising = mockSupervisedVehicles.filter((v) => v.supervisionStatus === 'supervising').length
     const alerting = mockAlertRecords.filter((a) => a.alertStatus === 'alerting').length
-    const pendingIn = mockSupervisedVehicles.filter((v) => v.stockStatus === 'pending_in').length
+    const pendingIn = mockSupervisedVehicles.filter((v) => v.salesFlowStatus === 'pending_in').length
+    const pendingListing = mockSupervisedVehicles.filter((v) => v.salesFlowStatus === 'pending_listing').length
+    const onSale = mockSupervisedVehicles.filter((v) => v.salesFlowStatus === 'on_sale').length
     const overAge = mockSupervisedVehicles.filter((v) => v.stockDays >= 60).length
-    return { total, inStock, supervising, alerting, pendingIn, overAge }
+    return { total, inStock, supervising, alerting, pendingIn, pendingListing, onSale, overAge }
   }, [])
 
   const filteredVehicles = useMemo(() => {
     let list = mockSupervisedVehicles
-    if (stockFilter !== 'all') list = list.filter((v) => v.stockStatus === stockFilter)
+    if (salesFlowFilter !== 'all') list = list.filter((v) => v.salesFlowStatus === salesFlowFilter)
     if (searchText) {
       const s = searchText.toLowerCase()
       list = list.filter((v) =>
@@ -36,415 +49,296 @@ export default function InventoryHome() {
       )
     }
     return list
-  }, [stockFilter, searchText])
+  }, [salesFlowFilter, searchText])
+
+  const openEntry = (v: SupervisedVehicle) => { setEntryModal(v); setEntryFailed(false) }
+  const openListing = (v: SupervisedVehicle) => {
+    setListingModal(v); setListingPrice(v.listingPrice ? String(v.listingPrice * 10000) : ''); setHasReport('有'); setListingRemark('')
+  }
 
   return (
     <div className="page">
       <div className="nav-dark">
         <button className="nav-back" onClick={() => navigate(-1)}><ChevronLeft size={22} /></button>
-        <div className="nav-title">库存监管</div>
+        <div className="nav-title">车辆管理</div>
         <div className="nav-right" />
       </div>
 
-      {/* 统计卡片 */}
+      {/* 销售流程条 */}
       <div className="anim d1" style={{
-        margin: '12px 16px', borderRadius: 16, overflow: 'hidden',
-        background: 'linear-gradient(135deg, #1A1A2E 0%, #2D2D44 100%)',
-        color: '#fff', padding: '20px 18px',
+        margin: '10px 16px 0', background: 'var(--brand)', borderRadius: 10, padding: '8px 14px',
+        display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          <Shield size={18} color="var(--brand-soft)" />
-          <span style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', opacity: 0.9 }}>监管总览</span>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-          {[
-            { label: '在库车辆', value: stats.inStock, color: '#7DFFB3' },
-            { label: '监管中', value: stats.supervising, color: '#fff' },
-            { label: '待入库', value: stats.pendingIn, color: '#FFD666' },
-          ].map((item) => (
-            <div key={item.label} style={{
-              background: 'rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 12px', textAlign: 'center',
-            }}>
-              <div style={{ fontSize: 10, opacity: 0.5, marginBottom: 4 }}>{item.label}</div>
-              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-num)', color: item.color }}>
-                {item.value}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginTop: 8 }}>
-          {[
-            { label: '告警中', value: stats.alerting, color: stats.alerting > 0 ? '#FF6B5A' : '#fff' },
-            { label: '库龄≥60天', value: stats.overAge, color: stats.overAge > 0 ? '#FF6B5A' : '#fff' },
-            { label: '车辆总数', value: stats.total, color: '#fff' },
-          ].map((item) => (
-            <div key={item.label} style={{
-              background: 'rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 12px', textAlign: 'center',
-            }}>
-              <div style={{ fontSize: 10, opacity: 0.5, marginBottom: 4 }}>{item.label}</div>
-              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-num)', color: item.color }}>
-                {item.value}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 快捷操作 */}
-      <div className="anim d2" style={{
-        margin: '0 16px 12px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8,
-      }}>
-        {[
-          { icon: Package, label: '入库确认', color: 'var(--brand)', bg: 'var(--brand-bg)', path: '' },
-          { icon: FileCheck, label: '签注管理', color: 'var(--blue)', bg: 'var(--blue-bg)', path: '/inventory/registration' },
-          { icon: Bell, label: '告警记录', color: 'var(--orange)', bg: 'var(--orange-bg)', path: '' },
-          { icon: ClipboardList, label: '库存盘点', color: 'var(--green)', bg: 'var(--green-bg)', path: '' },
-        ].map((item) => (
-          <button key={item.label} onClick={() => {
-            if (item.label === '告警记录') setActiveSection('alerts')
-            else if (item.label === '库存盘点') setActiveSection('check')
-            else if (item.path) navigate(item.path)
-          }} style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-            padding: '12px 8px', background: '#fff', borderRadius: 12,
-            border: '1px solid var(--border)', cursor: 'pointer', boxShadow: 'var(--shadow-sm)',
-          }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10, background: item.bg,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <item.icon size={18} color={item.color} />
-            </div>
-            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-1)' }}>{item.label}</span>
-          </button>
+        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', whiteSpace: 'nowrap' }}>销售流程:</span>
+        {['入库', '查验', '上架', '销售', '付款', '完成'].map((s, i, arr) => (
+          <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <span style={{ fontSize: 11, color: '#fff', fontWeight: 500, whiteSpace: 'nowrap' }}>{s}</span>
+            {i < arr.length - 1 && <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>→</span>}
+          </span>
         ))}
+        <ChevronRight size={14} color="rgba(255,255,255,0.5)" style={{ marginLeft: 'auto', flexShrink: 0 }} />
       </div>
 
-      {/* Section Tabs */}
-      <div className="anim d3" style={{ display: 'flex', padding: '0 16px', gap: 6, marginBottom: 8 }}>
-        {([
-          { key: 'vehicles' as const, label: '监管车辆' },
-          { key: 'alerts' as const, label: '告警记录' },
-          { key: 'use' as const, label: '用车管理' },
-          { key: 'check' as const, label: '库存盘点' },
-        ]).map((tab) => (
-          <button key={tab.key} onClick={() => setActiveSection(tab.key)} style={{
-            padding: '7px 14px', borderRadius: 20, border: 'none', cursor: 'pointer',
-            fontSize: 13, fontWeight: activeSection === tab.key ? 600 : 400,
-            background: activeSection === tab.key ? 'var(--dark)' : 'rgba(0,0,0,0.04)',
-            color: activeSection === tab.key ? '#fff' : 'var(--text-2)',
-            fontFamily: 'var(--font-display)', transition: 'all 0.2s',
-          }}>{tab.label}</button>
-        ))}
-      </div>
-
-      {/* Content */}
-      <div style={{ padding: '0 0 100px' }}>
-        {activeSection === 'vehicles' && (
-          <VehicleSection
-            vehicles={filteredVehicles}
-            stockFilter={stockFilter}
-            setStockFilter={setStockFilter}
-            searchText={searchText}
-            setSearchText={setSearchText}
-            navigate={navigate}
-          />
-        )}
-        {activeSection === 'alerts' && <AlertSection navigate={navigate} />}
-        {activeSection === 'use' && <UseSection navigate={navigate} />}
-        {activeSection === 'check' && <CheckSection />}
-      </div>
-    </div>
-  )
-}
-
-/* ---- 监管车辆列表 ---- */
-function VehicleSection({ vehicles, stockFilter, setStockFilter, searchText, setSearchText, navigate }: {
-  vehicles: typeof mockSupervisedVehicles
-  stockFilter: string
-  setStockFilter: (v: string) => void
-  searchText: string
-  setSearchText: (v: string) => void
-  navigate: ReturnType<typeof useNavigate>
-}) {
-  return (
-    <div style={{ padding: '0 16px' }}>
       {/* 搜索 */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
+      <div className="anim d1" style={{
+        display: 'flex', alignItems: 'center', gap: 8, margin: '10px 16px 0',
         background: '#fff', borderRadius: 10, padding: '8px 12px',
         border: '1px solid var(--border)',
       }}>
         <Search size={16} color="var(--text-3)" />
         <input
           value={searchText} onChange={(e) => setSearchText(e.target.value)}
-          placeholder="搜索车牌/VIN/品牌"
-          style={{
-            flex: 1, border: 'none', outline: 'none', fontSize: 14,
-            background: 'transparent', color: 'var(--text-0)',
-          }}
+          placeholder="支持VIN码、车牌搜索"
+          style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, background: 'transparent', color: 'var(--text-0)' }}
         />
       </div>
 
-      {/* 库存状态筛选 */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 10, overflowX: 'auto' }}>
-        {[
-          { key: 'all', label: '全部' },
-          { key: 'pending_in', label: '待入库' },
-          { key: 'in_stock', label: '在库' },
-          { key: 'out_stock', label: '出库' },
-        ].map((tab) => (
-          <button key={tab.key} onClick={() => setStockFilter(tab.key)} style={{
+      {/* 销售流程状态筛选 Tabs */}
+      <div className="anim d2" style={{ display: 'flex', padding: '10px 16px 0', gap: 6, overflowX: 'auto' }}>
+        {salesFlowTabs.map((tab) => (
+          <button key={tab.key} onClick={() => setSalesFlowFilter(tab.key)} style={{
             padding: '5px 12px', borderRadius: 16, border: 'none', cursor: 'pointer',
-            fontSize: 12, fontWeight: stockFilter === tab.key ? 600 : 400,
-            background: stockFilter === tab.key ? 'var(--brand-bg)' : 'rgba(0,0,0,0.03)',
-            color: stockFilter === tab.key ? 'var(--brand)' : 'var(--text-2)',
+            fontSize: 13, fontWeight: salesFlowFilter === tab.key ? 600 : 400,
+            background: salesFlowFilter === tab.key ? 'var(--brand)' : 'rgba(0,0,0,0.03)',
+            color: salesFlowFilter === tab.key ? '#fff' : 'var(--text-2)',
             whiteSpace: 'nowrap', transition: 'all 0.2s',
-          }}>{tab.label}</button>
+            textDecoration: salesFlowFilter === tab.key ? 'underline' : 'none',
+            textUnderlineOffset: 3,
+          }}>{tab.title}</button>
         ))}
       </div>
 
       {/* 车辆卡片列表 */}
-      {vehicles.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-2)', fontSize: 14 }}>暂无车辆数据</div>
-      ) : vehicles.map((v, idx) => {
-        const ss = stockStatusTagColor[v.stockStatus] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
-        const svs = supervisionStatusTagColor[v.supervisionStatus] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
-        return (
-          <div key={v.id} className={`anim d${Math.min(idx + 1, 5)}`}
-            onClick={() => navigate(`/inventory/detail/${v.id}`)}
-            style={{
-              background: '#fff', borderRadius: 14, border: '1px solid var(--border)',
-              boxShadow: 'var(--shadow-sm)', marginBottom: 10, overflow: 'hidden', cursor: 'pointer',
-              borderLeft: v.isScrapped ? '3px solid var(--red)' : v.stockDays >= 60 ? '3px solid var(--orange)' : undefined,
-            }}>
-            {/* Header */}
-            <div style={{
-              padding: '12px 14px', display: 'flex', justifyContent: 'space-between',
-              alignItems: 'center', borderBottom: '1px solid var(--border)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{v.plateNo}</span>
-                <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 5, fontWeight: 600, background: ss.bg, color: ss.color }}>
-                  {v.stockStatusText}
-                </span>
-                <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 5, fontWeight: 600, background: svs.bg, color: svs.color }}>
-                  {v.supervisionStatusText}
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                {v.deviceOnline === 'online'
-                  ? <Wifi size={14} color="var(--green)" />
-                  : <WifiOff size={14} color="var(--text-3)" />}
-                {v.cameraStatus === '正常'
-                  ? <Camera size={14} color="var(--blue)" />
-                  : <CameraOff size={14} color="var(--red)" />}
-              </div>
-            </div>
-
-            {/* Body */}
-            <div style={{ padding: '10px 14px' }}>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{v.brandModel}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 6, fontFamily: 'var(--font-num)' }}>
-                VIN: {v.vin}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Warehouse size={12} color="var(--text-2)" />
-                  <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{v.warehouse}</span>
+      <div style={{ padding: '10px 16px 100px' }}>
+        {filteredVehicles.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-2)', fontSize: 14 }}>暂无车辆数据</div>
+        ) : filteredVehicles.map((v, idx) => {
+          const sfc = salesFlowTagColor[v.salesFlowStatus] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
+          return (
+            <div key={v.id} className={`anim d${Math.min(idx + 1, 5)}`}
+              style={{
+                background: '#fff', borderRadius: 14, border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-sm)', marginBottom: 10, overflow: 'hidden', cursor: 'pointer',
+              }}>
+              <div onClick={() => navigate(`/inventory/detail/${v.id}`)} style={{ display: 'flex', padding: '12px 14px', gap: 10 }}>
+                {/* 车辆缩略图 */}
+                <div style={{ width: 80, height: 60, borderRadius: 8, background: 'var(--bg)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img src={`data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="60"><rect fill="%23e8e8e8" width="80" height="60" rx="4"/><text x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="9">${encodeURIComponent(v.brandModel.slice(0, 6))}</text></svg>`}
+                    alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Clock size={12} color={v.stockDays >= 60 ? 'var(--orange)' : 'var(--text-2)'} />
-                  <span style={{
-                    fontSize: 12, fontFamily: 'var(--font-num)', fontWeight: 600,
-                    color: v.stockDays >= 60 ? 'var(--orange)' : v.stockDays >= 45 ? 'var(--orange)' : 'var(--text-2)',
-                  }}>
-                    库龄 {v.stockDays}天
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{v.brandModel.length > 18 ? v.brandModel.slice(0, 18) + '...' : v.brandModel}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-2)', fontFamily: 'var(--font-num)' }}>
+                    {v.plateNo} | VIN后四位 {v.vin.slice(-4)}
+                  </div>
+                </div>
+              </div>
+              {/* 操作按钮 */}
+              <div style={{ padding: '0 14px 12px', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                {v.salesFlowStatus === 'pending_in' && (
+                  <button onClick={(e) => { e.stopPropagation(); openEntry(v) }}
+                    style={{ padding: '6px 16px', borderRadius: 20, border: 'none', background: 'var(--brand)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                    确认入库
+                  </button>
+                )}
+                {v.salesFlowStatus === 'pending_listing' && (
+                  <button onClick={(e) => { e.stopPropagation(); openListing(v) }}
+                    style={{ padding: '6px 16px', borderRadius: 20, border: 'none', background: 'var(--brand)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                    申请上架
+                  </button>
+                )}
+                {v.salesFlowStatus === 'on_sale' && v.listingPrice && (
+                  <span style={{ fontSize: 12, color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    售价 <span style={{ fontFamily: 'var(--font-num)', fontWeight: 700, color: 'var(--brand)', fontSize: 14 }}>{v.listingPrice.toFixed(2)}</span>万
                   </span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{v.salesperson} · {v.companyName}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  {v.isScrapped && (
-                    <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)', fontWeight: 600 }}>报废</span>
-                  )}
-                  {v.isSpecialEntry && (
-                    <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 4, background: 'var(--orange-bg)', color: 'var(--orange)', fontWeight: 600 }}>特殊入库</span>
-                  )}
-                  <ChevronRight size={14} color="var(--text-3)" />
-                </div>
+                )}
               </div>
             </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-/* ---- 告警记录 ---- */
-function AlertSection({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
-  return (
-    <div style={{ padding: '0 16px' }}>
-      {/* 告警统计 */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12,
-      }}>
-        {[
-          { label: '报警中', value: mockAlertRecords.filter((a) => a.alertStatus === 'alerting').length, color: 'var(--red)' },
-          { label: '处理中', value: mockAlertRecords.filter((a) => a.alertStatus === 'processing').length, color: 'var(--orange)' },
-          { label: '已结束', value: mockAlertRecords.filter((a) => a.alertStatus === 'ended').length, color: 'var(--text-2)' },
-        ].map((item) => (
-          <div key={item.label} style={{
-            background: '#fff', borderRadius: 10, padding: '10px 12px', textAlign: 'center',
-            border: '1px solid var(--border)',
-          }}>
-            <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 4 }}>{item.label}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-num)', color: item.color }}>{item.value}</div>
-          </div>
-        ))}
+          )
+        })}
+        {filteredVehicles.length > 0 && (
+          <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text-3)', fontSize: 12 }}>没有更多了～</div>
+        )}
       </div>
 
-      {mockAlertRecords.map((a, idx) => {
-        const lc = alertLevelTagColor[a.alertLevel] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
-        return (
-          <div key={a.id} className={`anim d${Math.min(idx + 1, 5)}`} style={{
-            background: '#fff', borderRadius: 14, border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-sm)', marginBottom: 10, overflow: 'hidden',
-            borderLeft: a.alertStatus === 'alerting' ? '3px solid var(--red)' : undefined,
+      {/* ===== 入库弹窗 ===== */}
+      {entryModal && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={() => setEntryModal(null)} />
+          <div style={{
+            position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+            width: '100%', maxWidth: 430, zIndex: 201,
+            background: '#fff', borderRadius: '20px 20px 0 0',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            animation: 'slideUp 0.3s ease',
           }}>
-            <div style={{
-              padding: '12px 14px', display: 'flex', justifyContent: 'space-between',
-              alignItems: 'center', borderBottom: '1px solid var(--border)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <AlertTriangle size={14} color={a.alertStatus === 'alerting' ? 'var(--red)' : 'var(--text-2)'} />
-                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{a.alertNo}</span>
-                <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 5, fontWeight: 600, background: lc.bg, color: lc.color }}>
-                  {a.alertLevel === 'high' ? '高' : a.alertLevel === 'medium' ? '中' : '低'}
-                </span>
-              </div>
-              <span style={{
-                fontSize: 11, padding: '2px 7px', borderRadius: 5, fontWeight: 600,
-                background: a.alertStatus === 'alerting' ? 'var(--red-bg)' : a.alertStatus === 'processing' ? 'var(--orange-bg)' : 'rgba(0,0,0,0.04)',
-                color: a.alertStatus === 'alerting' ? 'var(--red)' : a.alertStatus === 'processing' ? 'var(--orange)' : 'var(--text-2)',
-              }}>{a.alertStatusText}</span>
+            <div style={{ padding: '20px 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)' }}>车辆入库</span>
+              <button onClick={() => setEntryModal(null)} style={{ background: 'var(--bg)', border: 'none', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, color: 'var(--text-2)' }}>
+                <X size={16} />
+              </button>
             </div>
-            <div style={{ padding: '10px 14px' }}>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{a.alertType}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-1)', marginBottom: 6 }}>{a.alertContent}</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{a.plateNo}</span>
-                <span style={{ fontSize: 10, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>{a.triggerTime}</span>
-              </div>
-              {a.remark && (
-                <div style={{
-                  marginTop: 6, padding: '6px 10px', borderRadius: 8,
-                  background: 'var(--bg-warm)', fontSize: 12, color: 'var(--text-2)',
-                }}>
-                  备注: {a.remark}
+
+            {/* 提示 */}
+            <div style={{ margin: '12px 20px', padding: '10px 14px', borderRadius: 10, background: 'var(--orange-bg)', fontSize: 12, color: 'var(--orange)', lineHeight: 1.6 }}>
+              入库前请确保车辆在店，并已成功安装硬件OBD
+            </div>
+
+            {/* 入库失败弹窗 */}
+            {entryFailed && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)' }} />
+                <div style={{ position: 'relative', background: '#fff', borderRadius: 16, padding: '28px 24px', width: 300, textAlign: 'center', zIndex: 1 }}>
+                  <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>入库失败</div>
+                  <div style={{ fontSize: 14, color: 'var(--text-2)', marginBottom: 6 }}>入库失败</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-1)', marginBottom: 6 }}>原因：车辆实时定位不在电子围栏内</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 20 }}>请联系市场相关人员处理</div>
+                  <button onClick={() => setEntryFailed(false)}
+                    style={{ padding: '10px 40px', borderRadius: 8, border: 'none', background: 'var(--blue)', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
+                    关闭
+                  </button>
                 </div>
+              </div>
+            )}
+
+            {/* 仓库选择 */}
+            <div style={{ padding: '0 20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 14, color: 'var(--text-1)' }}><span style={{ color: 'var(--brand)' }}>*</span>待入仓库</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                  <span style={{ fontSize: 14, color: 'var(--text-0)', fontWeight: 500 }}>{entryModal.entryWarehouse || '智慧门店SM-A区'}</span>
+                  <ChevronRight size={16} color="var(--text-3)" />
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 14, color: 'var(--text-1)' }}>入库地址</span>
+                <span style={{ fontSize: 14, color: 'var(--text-0)' }}>{entryModal.entryAddress || '广东广州市天河区酷狗音乐'}</span>
+              </div>
+              {/* 监管方案提示 */}
+              <div style={{ padding: '12px 0', fontSize: 12, color: 'var(--text-2)' }}>
+                监管方案：<span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{entryModal.supervisionPlan}</span>
+                {entryModal.supervisionPlan.includes('GPS') && <span style={{ marginLeft: 8, color: 'var(--blue)' }}>GPS设备将在入库+1天早9:00自动确认</span>}
+              </div>
+            </div>
+
+            {/* 确认入库按钮 */}
+            <div style={{ padding: '16px 20px 20px' }}>
+              <button onClick={() => setEntryFailed(true)}
+                style={{ width: '100%', padding: '14px', borderRadius: 10, border: 'none', background: 'var(--brand)', color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>
+                确认入库
+              </button>
+            </div>
+          </div>
+          <style>{`@keyframes slideUp { from { transform: translateX(-50%) translateY(100%); } to { transform: translateX(-50%) translateY(0); } }`}</style>
+        </>
+      )}
+
+      {/* ===== 上架弹窗 ===== */}
+      {listingModal && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={() => setListingModal(null)} />
+          <div style={{
+            position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+            width: '100%', maxWidth: 430, zIndex: 201,
+            background: '#fff', borderRadius: '20px 20px 0 0',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            animation: 'slideUp 0.3s ease',
+          }}>
+            <div style={{ padding: '20px 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)' }}>车辆上架</span>
+              <button onClick={() => setListingModal(null)} style={{ background: 'var(--bg)', border: 'none', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, color: 'var(--text-2)' }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* 提示 */}
+            <div style={{ margin: '12px 20px', padding: '10px 14px', borderRadius: 10, background: 'var(--green-bg)', fontSize: 12, color: 'var(--green)', lineHeight: 1.6 }}>
+              车辆上架需上传真实有效查验报告，报告提交审核通过车辆将自动上架，您可联系业务人员加快报告审核速度
+            </div>
+
+            <div style={{ padding: '0 20px' }}>
+              {/* 车辆售价 */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 14, color: 'var(--text-1)' }}>车辆售价</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <input type="number" value={listingPrice} onChange={(e) => setListingPrice(e.target.value)}
+                    placeholder="请输入" style={{ width: 100, textAlign: 'right', border: 'none', outline: 'none', fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-num)', color: 'var(--text-0)', background: 'transparent' }} />
+                  <span style={{ fontSize: 14, color: 'var(--text-2)' }}>元</span>
+                </div>
+              </div>
+
+              {/* 查验报告 */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 14, color: 'var(--text-1)' }}>查验报告</span>
+                <div style={{ display: 'flex', gap: 16 }}>
+                  {(['有', '无'] as const).map((opt) => (
+                    <label key={opt} onClick={() => setHasReport(opt)} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: 14 }}>
+                      <span style={{
+                        width: 20, height: 20, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        border: hasReport === opt ? 'none' : '2px solid var(--text-3)',
+                        background: hasReport === opt ? 'var(--brand)' : 'transparent',
+                      }}>
+                        {hasReport === opt && <CheckCircle size={14} color="#fff" />}
+                      </span>
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* 有报告：上传 */}
+              {hasReport === '有' && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: 14, color: 'var(--text-1)' }}>查验报告</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-2)' }}>上传真实有效查验报告二维码图片</span>
+                  </div>
+                  <div style={{ padding: '12px 0' }}>
+                    <div style={{ width: 80, height: 80, borderRadius: 8, background: 'var(--bg)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, cursor: 'pointer' }}>
+                      <Upload size={20} color="var(--text-3)" />
+                      <span style={{ fontSize: 10, color: 'var(--text-3)' }}>上传</span>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* 无报告：呼叫查验上门 */}
+              {hasReport === '无' && (
+                <div style={{ padding: '20px 0', textAlign: 'center' }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 16 }}>本次查验服务机构：唯车查验</div>
+                </div>
+              )}
+
+              {/* 备注 */}
+              <div style={{ padding: '14px 0', borderTop: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: 14, color: 'var(--text-1)' }}>备注</span>
+                </div>
+                <textarea value={listingRemark} onChange={(e) => setListingRemark(e.target.value)}
+                  placeholder="额外说明，100字以内" maxLength={100} rows={2}
+                  style={{ width: '100%', border: 'none', outline: 'none', fontSize: 14, color: 'var(--text-0)', background: 'transparent', resize: 'none' }} />
+                <div style={{ textAlign: 'right', fontSize: 11, color: 'var(--text-3)' }}>{listingRemark.length}/100</div>
+              </div>
+            </div>
+
+            {/* 底部按钮 */}
+            <div style={{ padding: '8px 20px 20px' }}>
+              {hasReport === '有' ? (
+                <button onClick={() => { alert('上架申请已提交'); setListingModal(null) }}
+                  style={{ width: '100%', padding: '14px', borderRadius: 10, border: 'none', background: 'var(--brand)', color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>
+                  申请上架
+                </button>
+              ) : (
+                <button onClick={() => { alert('已呼叫查验上门'); setListingModal(null) }}
+                  style={{ width: '100%', padding: '14px', borderRadius: 10, border: 'none', background: 'var(--brand)', color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>
+                  呼叫查验上门
+                </button>
               )}
             </div>
           </div>
-        )
-      })}
-    </div>
-  )
-}
-
-/* ---- 用车管理 ---- */
-function UseSection({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
-  return (
-    <div style={{ padding: '0 16px' }}>
-      {mockVehicleUseRecords.map((r, idx) => {
-        const statusColor: Record<string, { bg: string; color: string }> = {
-          using: { bg: 'var(--blue-bg)', color: 'var(--blue)' },
-          completed: { bg: 'var(--green-bg)', color: 'var(--green)' },
-          expired: { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' },
-          pending_approval: { bg: 'var(--orange-bg)', color: 'var(--orange)' },
-          rejected: { bg: 'var(--red-bg)', color: 'var(--red)' },
-        }
-        const sc = statusColor[r.useStatus] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
-        return (
-          <div key={r.id} className={`anim d${Math.min(idx + 1, 5)}`} style={{
-            background: '#fff', borderRadius: 14, border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-sm)', marginBottom: 10, overflow: 'hidden',
-          }}>
-            <div style={{
-              padding: '12px 14px', display: 'flex', justifyContent: 'space-between',
-              alignItems: 'center', borderBottom: '1px solid var(--border)',
-            }}>
-              <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{r.id}</span>
-              <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 5, fontWeight: 600, background: sc.bg, color: sc.color }}>
-                {r.useStatusText}
-              </span>
-            </div>
-            <div style={{ padding: '10px 14px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: 14, fontWeight: 600 }}>{r.plateNo}</span>
-                <span style={{ fontSize: 12, padding: '1px 6px', borderRadius: 4, background: 'var(--blue-bg)', color: 'var(--blue)', fontWeight: 500 }}>
-                  {r.useType}
-                </span>
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 4 }}>
-                提车人: {r.pickerName}（{r.pickerType}）
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 4 }}>
-                用车时段: {r.useDuration}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, color: 'var(--text-2)' }}>申请人: {r.applicant}</span>
-                <span style={{ fontSize: 10, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>{r.applyTime.slice(5)}</span>
-              </div>
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-/* ---- 库存盘点 ---- */
-function CheckSection() {
-  return (
-    <div style={{ padding: '0 16px' }}>
-      {mockInventoryChecks.map((c, idx) => (
-        <div key={c.id} className={`anim d${Math.min(idx + 1, 5)}`} style={{
-          background: '#fff', borderRadius: 14, border: '1px solid var(--border)',
-          boxShadow: 'var(--shadow-sm)', marginBottom: 10, padding: '14px 16px',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <ClipboardList size={16} color="var(--blue)" />
-              <span style={{ fontSize: 14, fontWeight: 600 }}>{c.warehouse}</span>
-            </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <span style={{
-                fontSize: 11, padding: '2px 7px', borderRadius: 5, fontWeight: 600,
-                background: c.checkStatus === 'checking' ? 'var(--blue-bg)' : 'rgba(0,0,0,0.04)',
-                color: c.checkStatus === 'checking' ? 'var(--blue)' : 'var(--text-2)',
-              }}>{c.checkStatusText}</span>
-              <span style={{
-                fontSize: 11, padding: '2px 7px', borderRadius: 5, fontWeight: 600,
-                background: c.checkResult === '正常' ? 'var(--green-bg)' : 'var(--red-bg)',
-                color: c.checkResult === '正常' ? 'var(--green)' : 'var(--red)',
-              }}>{c.checkResult}</span>
-            </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-2)' }}>
-            <span>盘点类型: {c.checkTypeText}</span>
-            <span>车辆数: <span style={{ fontWeight: 600, fontFamily: 'var(--font-num)', color: 'var(--text-0)' }}>{c.totalCount}</span></span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-2)', marginTop: 4 }}>
-            <span>盘点人: {c.checker}</span>
-            <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--text-3)' }}>
-              {c.finishTime || c.createTime}
-            </span>
-          </div>
-        </div>
-      ))}
+          <style>{`@keyframes slideUp { from { transform: translateX(-50%) translateY(100%); } to { transform: translateX(-50%) translateY(0); } }`}</style>
+        </>
+      )}
     </div>
   )
 }

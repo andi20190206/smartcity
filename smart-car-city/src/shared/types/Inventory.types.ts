@@ -1,6 +1,9 @@
 /** 库存状态 */
 export type StockStatus = 'pending_in' | 'in_stock' | 'out_stock' | 'transferred'
 
+/** 销售流程状态 */
+export type SalesFlowStatus = 'pending_in' | 'pending_listing' | 'on_sale' | 'in_transaction' | 'sold'
+
 /** 监管状态 */
 export type SupervisionStatus = 'pending' | 'supervising' | 'released'
 
@@ -41,6 +44,9 @@ export interface SupervisedVehicle {
   warehouse: string
   stockStatus: StockStatus
   stockStatusText: string
+  /** 销售流程状态 */
+  salesFlowStatus: SalesFlowStatus
+  salesFlowStatusText: string
   supervisionStatus: SupervisionStatus
   supervisionStatusText: string
   deviceNo: string
@@ -64,6 +70,17 @@ export interface SupervisedVehicle {
   signTime?: string
   oldOwner?: string
   loanStatus?: '待垫款' | '已垫款'
+  /** 上架信息 */
+  listingPrice?: number       // 零售价（上架时填写，万元）
+  wholesalePrice?: number     // 批售价（上架时填写，万元）
+  inspectionReport?: '有' | '无'  // 查验报告
+  inspectionReportUrl?: string    // 查验报告图片
+  listingTime?: string            // 上架时间
+  listingRemark?: string          // 上架备注
+  /** 入库信息 */
+  entryWarehouse?: string         // 待入仓库
+  entryAddress?: string           // 入库地址
+  entryTime?: string              // 入库时间
 }
 
 /** 用车记录 */

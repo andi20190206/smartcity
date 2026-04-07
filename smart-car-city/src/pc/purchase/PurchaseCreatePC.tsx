@@ -933,7 +933,8 @@ export default function PurchaseCreatePC() {
                   engineNo: 'LFV2A21G5K3012345', useType: '非营运',
                   mileage: '3.2', registerDate: '2019-06-15', annualInspection: '2027-06-15',
                   color: '白色', transferCount: '1', price: '5.80', condition: '良好',
-                  collision: '正常', waterDamage: '正常', fireDamage: '正常', maintenanceReport: '有',
+                  odometerStatus: '正常', conditionDesc: '车况整体良好',
+                  collision: '覆盖件、加强件和结构件均无损伤、修复', waterDamage: '正常', fireDamage: '正常', maintenanceReport: '有',
                 })
                 message.success('已填充测试数据')
               }} style={{ borderColor: '#fa8c16', color: '#fa8c16' }}>🧪 填充测试数据</Button>
@@ -1127,25 +1128,47 @@ export default function PurchaseCreatePC() {
             <Row gutter={[16, 0]}>
               <Col span={6}>
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 4 }}>碰撞</label>
-                  <Select value={editingVehicle.collision} onChange={(v) => setEditingVehicle({ ...editingVehicle, collision: v })} options={[{ value: '正常', label: '正常' }, { value: '异常', label: '异常' }]} style={{ width: '100%' }} />
+                  <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 4 }}>里程表状态</label>
+                  <Select value={editingVehicle.odometerStatus || undefined} onChange={(v) => setEditingVehicle({ ...editingVehicle, odometerStatus: v })} options={[{ value: '正常', label: '正常' }, { value: '故障', label: '故障' }]} style={{ width: '100%' }} placeholder="请选择" allowClear />
+                </div>
+              </Col>
+              <Col span={18}>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 4 }}>车况描述（限200字）</label>
+                  <Input.TextArea value={editingVehicle.conditionDesc} onChange={(e) => setEditingVehicle({ ...editingVehicle, conditionDesc: e.target.value })} maxLength={200} showCount rows={2} placeholder="请描述车况" />
+                </div>
+              </Col>
+              <Col span={12}>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 4 }}>碰撞 <span style={{ color: '#E8352E' }}>*</span></label>
+                  <Select value={editingVehicle.collision} onChange={(v) => setEditingVehicle({ ...editingVehicle, collision: v })}
+                    options={collisionOptions.map((o) => ({ value: o.value, label: o.short }))}
+                    style={{ width: '100%' }}
+                    optionRender={(option) => (
+                      <div style={{ fontSize: 12, lineHeight: 1.5, padding: '4px 0' }}>{option.data.value}</div>
+                    )} />
                 </div>
               </Col>
               <Col span={6}>
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 4 }}>水泡</label>
-                  <Select value={editingVehicle.waterDamage} onChange={(v) => setEditingVehicle({ ...editingVehicle, waterDamage: v })} options={[{ value: '正常', label: '正常' }, { value: '异常', label: '异常' }]} style={{ width: '100%' }} />
+                  <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 4 }}>水泡 <span style={{ color: '#E8352E' }}>*</span></label>
+                  <Select value={editingVehicle.waterDamage} onChange={(v) => setEditingVehicle({ ...editingVehicle, waterDamage: v })} options={waterDamageOptions} style={{ width: '100%' }} />
                 </div>
               </Col>
               <Col span={6}>
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 4 }}>火烧</label>
-                  <Select value={editingVehicle.fireDamage} onChange={(v) => setEditingVehicle({ ...editingVehicle, fireDamage: v })} options={[{ value: '正常', label: '正常' }, { value: '异常', label: '异常' }]} style={{ width: '100%' }} />
+                  <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 4 }}>火烧 <span style={{ color: '#E8352E' }}>*</span></label>
+                  <Select value={editingVehicle.fireDamage} onChange={(v) => setEditingVehicle({ ...editingVehicle, fireDamage: v })}
+                    options={fireDamageOptions.map((o) => ({ value: o.value, label: o.short }))}
+                    style={{ width: '100%' }}
+                    optionRender={(option) => (
+                      <div style={{ fontSize: 12, lineHeight: 1.5, padding: '4px 0' }}>{option.data.value}</div>
+                    )} />
                 </div>
               </Col>
               <Col span={6}>
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 4 }}>维保报告</label>
+                  <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 4 }}>维保报告 <span style={{ color: '#E8352E' }}>*</span></label>
                   <Select value={editingVehicle.maintenanceReport} onChange={(v) => setEditingVehicle({ ...editingVehicle, maintenanceReport: v })} options={[{ value: '有', label: '有' }, { value: '无', label: '无' }]} style={{ width: '100%' }} />
                 </div>
               </Col>

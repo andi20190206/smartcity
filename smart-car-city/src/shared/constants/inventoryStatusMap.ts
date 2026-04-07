@@ -6,6 +6,23 @@ export const stockStatusTabs = [
   { key: 'transferred', title: '已转移' },
 ]
 
+export const salesFlowTabs = [
+  { key: 'all', title: '全部' },
+  { key: 'pending_in', title: '待入库' },
+  { key: 'pending_listing', title: '待上架' },
+  { key: 'on_sale', title: '在售' },
+  { key: 'in_transaction', title: '交易中' },
+  { key: 'sold', title: '已售' },
+]
+
+export const salesFlowTagColor: Record<string, { bg: string; color: string }> = {
+  pending_in: { bg: 'var(--orange-bg)', color: 'var(--orange)' },
+  pending_listing: { bg: 'var(--blue-bg)', color: 'var(--blue)' },
+  on_sale: { bg: 'var(--green-bg)', color: 'var(--green)' },
+  in_transaction: { bg: 'var(--brand-bg)', color: 'var(--brand)' },
+  sold: { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' },
+}
+
 export const supervisionStatusTabs = [
   { key: 'all', title: '全部' },
   { key: 'pending', title: '待监管' },

@@ -12,6 +12,7 @@ import { mockOrders } from '../../shared/mock/purchaseMock'
 import { approvalTypeText } from '../../shared/constants/approvalStatusMap'
 import type { VehiclePricingInfo } from '../../shared/types/Approval.types'
 import { vehicleDocImages, vehiclePhotoImages, maintenanceImages } from '../../shared/constants/docImages'
+import { getCollisionShort, getCollisionColor, getWaterDamageColor, getFireDamageShort, getFireDamageColor } from '../../shared/constants/vehicleConditionOptions'
 
 const { TextArea } = Input
 
@@ -224,9 +225,9 @@ export default function ApprovalDetailPC() {
                           { label: '过户次数', value: `${v.transferCount}次` },
                           { label: '采购价', value: `${v.price.toFixed(2)}万`, highlight: true },
                           { label: '车况', value: v.condition },
-                          { label: '碰撞', value: v.collision },
+                          { label: '碰撞', value: getCollisionShort(v.collision) },
                           { label: '水泡', value: v.waterDamage },
-                          { label: '火烧', value: v.fireDamage },
+                          { label: '火烧', value: getFireDamageShort(v.fireDamage) },
                           { label: '维保报告', value: v.maintenanceReport },
                         ].map((item) => (
                           <div key={item.label} style={{ padding: '10px 16px', borderBottom: '1px solid #f5f5f5', borderRight: '1px solid #f5f5f5' }}>

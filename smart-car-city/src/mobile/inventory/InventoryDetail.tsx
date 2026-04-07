@@ -5,7 +5,7 @@ import {
   Car, Cpu, Navigation,
 } from 'lucide-react'
 import { mockSupervisedVehicles, mockAlertRecords, mockVehicleUseRecords } from '../../shared/mock/inventoryMock'
-import { stockStatusTagColor, supervisionStatusTagColor } from '../../shared/constants/inventoryStatusMap'
+import { stockStatusTagColor, supervisionStatusTagColor, salesFlowTagColor } from '../../shared/constants/inventoryStatusMap'
 
 export default function InventoryDetail() {
   const { id } = useParams()
@@ -27,6 +27,7 @@ export default function InventoryDetail() {
 
   const ss = stockStatusTagColor[vehicle.stockStatus] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
   const svs = supervisionStatusTagColor[vehicle.supervisionStatus] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
+  const sfc = salesFlowTagColor[vehicle.salesFlowStatus] || { bg: 'rgba(0,0,0,0.04)', color: 'var(--text-2)' }
   const relatedAlerts = mockAlertRecords.filter((a) => a.plateNo === vehicle.plateNo)
   const relatedUse = mockVehicleUseRecords.filter((u) => u.plateNo === vehicle.plateNo)
 
@@ -52,8 +53,8 @@ export default function InventoryDetail() {
             <div style={{ fontSize: 14, opacity: 0.7, marginTop: 4 }}>{vehicle.brandModel}</div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, fontWeight: 600, background: ss.bg, color: ss.color }}>
-              {vehicle.stockStatusText}
+            <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, fontWeight: 600, background: sfc.bg, color: sfc.color }}>
+              {vehicle.salesFlowStatusText}
             </span>
             <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, fontWeight: 600, background: svs.bg, color: svs.color }}>
               {vehicle.supervisionStatusText}
@@ -171,6 +172,35 @@ export default function InventoryDetail() {
                 <span style={{
                   fontSize: 13, fontWeight: 500,
                   color: item.highlight ? 'var(--orange)' : 'var(--text-0)',
+                }}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* 上架信息（已上架车辆） */}
+      {vehicle.listingPrice && (
+        <>
+          <div className="section-hd anim d4">上架信息</div>
+          <div className="anim d4" style={{ margin: '0 16px 12px', background: '#fff', borderRadius: 14, border: '1px solid var(--border)', overflow: 'hidden' }}>
+            {[
+              { label: '零售价（售价）', value: `${vehicle.listingPrice.toFixed(2)}万元`, highlight: true },
+              ...(vehicle.wholesalePrice ? [{ label: '批售价', value: `${vehicle.wholesalePrice.toFixed(2)}万元` }] : []),
+              { label: '查验报告', value: vehicle.inspectionReport || '-' },
+              { label: '上架时间', value: vehicle.listingTime || '-' },
+              ...(vehicle.listingRemark ? [{ label: '备注', value: vehicle.listingRemark }] : []),
+            ].map((item, i, arr) => (
+              <div key={item.label} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '12px 14px',
+                borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+              }}>
+                <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{item.label}</span>
+                <span style={{
+                  fontSize: 13, fontWeight: 500,
+                  color: (item as any).highlight ? 'var(--brand)' : 'var(--text-0)',
+                  fontFamily: (item as any).highlight ? 'var(--font-num)' : undefined,
                 }}>{item.value}</span>
               </div>
             ))}

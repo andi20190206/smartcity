@@ -44,6 +44,10 @@ export interface SalesOrder {
   payerCardNo?: string
   payerBank?: string
   payerPhone?: string
+  /** 个体工商户专用：银行卡类型（法人名下银行卡 / 对公账户银行卡） */
+  payerBankCardType?: '法人名下银行卡' | '对公账户银行卡'
+  /** 账户类型（他行个人账户/中信个人账户/他行企业账户/中信企业账户） */
+  payerAccountType?: string
   /** 签名 */
   salesAdvisorSign?: boolean
   buyerSign?: boolean

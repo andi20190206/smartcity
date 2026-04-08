@@ -14,6 +14,9 @@ import type { AlertRecord, VehicleUseRecord } from '../../shared/types/Inventory
 const stockStatusColorMap: Record<string, string> = {
   pending_in: 'warning', in_stock: 'success', out_stock: 'processing', transferred: 'default',
 }
+const salesFlowColorMap: Record<string, string> = {
+  pending_in: 'warning', pending_listing: 'processing', on_sale: 'success', in_transaction: 'error', sold: 'default',
+}
 const supervisionStatusColorMap: Record<string, string> = {
   pending: 'warning', supervising: 'success', released: 'default',
 }
@@ -198,6 +201,7 @@ export default function InventoryDetailPC() {
             <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} />
             <span className="order-id">{vehicle.plateNo}</span>
             <Tag color={stockStatusColorMap[vehicle.stockStatus]} style={{ borderRadius: 4, fontSize: 13 }}>{vehicle.stockStatusText}</Tag>
+            <Tag color={salesFlowColorMap[vehicle.salesFlowStatus]} style={{ borderRadius: 4, fontSize: 13 }}>{vehicle.salesFlowStatusText}</Tag>
             <Tag color={supervisionStatusColorMap[vehicle.supervisionStatus]} style={{ borderRadius: 4, fontSize: 13 }}>{vehicle.supervisionStatusText}</Tag>
             {vehicle.isScrapped && <Tag color="error">报废车</Tag>}
             {vehicle.isSpecialEntry && <Tag color="warning">特殊入库</Tag>}

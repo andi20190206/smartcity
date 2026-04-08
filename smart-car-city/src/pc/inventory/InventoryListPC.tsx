@@ -16,6 +16,9 @@ import type {
 const stockStatusColorMap: Record<string, string> = {
   pending_in: 'warning', in_stock: 'success', out_stock: 'processing', transferred: 'default',
 }
+const salesFlowColorMap: Record<string, string> = {
+  pending_in: 'warning', pending_listing: 'processing', on_sale: 'success', in_transaction: 'error', sold: 'default',
+}
 const supervisionStatusColorMap: Record<string, string> = {
   pending: 'warning', supervising: 'success', released: 'default',
 }
@@ -93,6 +96,12 @@ export default function InventoryListPC() {
       title: '库存状态', dataIndex: 'stockStatus', key: 'stockStatus', width: 90,
       render: (status: string, r: SupervisedVehicle) => (
         <Tag color={stockStatusColorMap[status]} style={{ borderRadius: 4 }}>{r.stockStatusText}</Tag>
+      ),
+    },
+    {
+      title: '销售流程', dataIndex: 'salesFlowStatus', key: 'salesFlowStatus', width: 90,
+      render: (status: string, r: SupervisedVehicle) => (
+        <Tag color={salesFlowColorMap[status]} style={{ borderRadius: 4 }}>{r.salesFlowStatusText}</Tag>
       ),
     },
     {

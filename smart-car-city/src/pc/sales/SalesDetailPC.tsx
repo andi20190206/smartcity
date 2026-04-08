@@ -5,7 +5,7 @@ import type { ColumnsType } from 'antd/es/table'
 import {
   ArrowLeftOutlined, PrinterOutlined, EditOutlined, FileTextOutlined,
   ArrowUpOutlined, ArrowDownOutlined, CheckCircleOutlined, ClockCircleOutlined,
-  UserOutlined, CarOutlined, DollarOutlined, AuditOutlined,
+  UserOutlined, CarOutlined, DollarOutlined, AuditOutlined, BankOutlined,
 } from '@ant-design/icons'
 import { mockSalesOrders } from '../../shared/mock/salesMock'
 import type { SalesVehicleItem } from '../../shared/types/Sales.types'
@@ -184,34 +184,116 @@ export default function SalesDetailPC() {
         <div className="detail-section-body">
           <div className="info-grid">
             <div className="info-item">
-              <span className="info-label">付款人</span>
-              <span className="info-value">{order.payerIsBuyer ? '与买家一致' : (order.payerName || '-')}</span>
+              <span className="info-label">付款人是否为买家</span>
+              <span className="info-value">{order.payerIsBuyer ? '是（与买家一致）' : '否（第三方付款）'}</span>
             </div>
-            {!order.payerIsBuyer && (
-              <>
-                <div className="info-item">
-                  <span className="info-label">付款人类型</span>
-                  <span className="info-value">{order.payerType || '-'}</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">证件号码</span>
-                  <span className="info-value">{order.payerIdNo || '-'}</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">银行卡号</span>
-                  <span className="info-value">{order.payerCardNo || '-'}</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">开户行</span>
-                  <span className="info-value">{order.payerBank || '-'}</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">预留手机</span>
-                  <span className="info-value">{order.payerPhone || '-'}</span>
-                </div>
-              </>
-            )}
+            {/* 付款人基本信息 — 无论是否与买家一致都展示 */}
+            {(() => {
+              const effectiveType = order.payerIsBuyer ? order.buyerType : (order.payerType || '个人')
+              const effectiveName = order.payerIsBuyer ? order.buyerName : (order.payerName || '-')
+              const effectiveIdNo = order.payerIsBuyer ? order.buyerIdNo : (order.payerIdNo || '-')
+              return (
+                <>
+                  <div className="info-item">
+                    <span className="info-label">付款人类型</span>
+                    <span className="info-value">{effectiveType}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">{effectiveType === '企业' || effectiveType === '个体工商户' ? '企业名称' : '付款人姓名'}</span>
+                    <span className="info-value">{effectiveName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">证件号码</span>
+                    <span className="info-value" style={{ fontFamily: "'DM Sans', monospace" }}>{effectiveIdNo}</span>
+                  </div>
+                </>
+              )
+            })()}
           </div>
+          {/* 银行卡信息 — 根据付款人类型区分展示 */}
+          {(() => {
+            const effectiveType = order.payerIsBuyer ? order.buyerType : (order.payerType || '个人')
+            return (
+              <div style={{ marginTop: 16, padding: '16px', background: '#fafafa', borderRadius: 8, border: '1px solid #f0f0f0' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <BankOutlined style={{ color: '#E8352E' }} />
+                  银行卡信息
+                  <Tag style={{ marginLeft: 4, borderRadius: 4, fontSize: 11 }} color={effectiveType === '企业' ? 'blue' : effectiveType === '个体工商户' ? 'orange' : 'green'}>
+                    {effectiveType}
+                  </Tag>
+                </div>
+                <div className="info-grid">
+                  {/* 个人 */}
+                  {effectiveType === '个人' && (
+                    <>
+                      <div className="info-item">
+                        <span className="info-label">开户名</span>
+                        <span className="info-value">{order.payerName || order.buyerName || '-'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">银行卡号</span>
+                        <span className="info-value" style={{ fontFamily: "'DM Sans', monospace", letterSpacing: 0.5 }}>{order.payerCardNo || '-'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">开户行</span>
+                        <span className="info-value">{order.payerBank || '-'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">银行预留手机</span>
+                        <span className="info-value">{order.payerPhone || '-'}</span>
+                      </div>
+                    </>
+                  )}
+                  {/* 企业 */}
+                  {effectiveType === '企业' && (
+                    <>
+                      <div className="info-item">
+                        <span className="info-label">对公账户名称</span>
+                        <span className="info-value">{order.payerAccountName || '-'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">对公账号</span>
+                        <span className="info-value" style={{ fontFamily: "'DM Sans', monospace", letterSpacing: 0.5 }}>{order.payerCardNo || '-'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">所属银行</span>
+                        <span className="info-value">{order.payerBank || '-'}</span>
+                      </div>
+                    </>
+                  )}
+                  {/* 个体工商户 */}
+                  {effectiveType === '个体工商户' && (
+                    <>
+                      <div className="info-item">
+                        <span className="info-label">银行卡类型</span>
+                        <span className="info-value">{order.payerBankCardType || '-'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">账户类型</span>
+                        <span className="info-value">{order.payerAccountType || '-'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">开户名</span>
+                        <span className="info-value">{order.payerAccountName || order.payerName || order.buyerName || '-'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">银行卡号</span>
+                        <span className="info-value" style={{ fontFamily: "'DM Sans', monospace", letterSpacing: 0.5 }}>{order.payerCardNo || '-'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">银行名称</span>
+                        <span className="info-value">{order.payerBank || '-'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">银行预留手机</span>
+                        <span className="info-value">{order.payerPhone || '-'}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )
+          })()}
         </div>
       </div>
 

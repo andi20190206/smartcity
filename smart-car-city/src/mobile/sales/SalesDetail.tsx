@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, ChevronDown, ChevronUp, TrendingUp, TrendingDown } from 'lucide-react'
+import { ChevronLeft, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Landmark } from 'lucide-react'
 import { mockSalesOrders } from '../../shared/mock/salesMock'
 import type { SalesVehicleItem } from '../../shared/types/Sales.types'
 
@@ -167,15 +167,69 @@ export default function SalesDetail() {
       {/* Payment info */}
       <div className="section-hd">付款信息</div>
       <div className="weui-cells" style={{ margin: '0 16px', borderRadius: 8, overflow: 'hidden' }}>
-        <InfoRow label="付款人" value={order.payerIsBuyer ? '与买家一致' : (order.payerName || '-')} />
-        {!order.payerIsBuyer && order.payerCardNo && (
-          <>
-            <InfoRow label="银行卡号" value={order.payerCardNo} />
-            <InfoRow label="开户行" value={order.payerBank || '-'} />
-            <InfoRow label="预留手机" value={order.payerPhone || '-'} />
-          </>
-        )}
+        <InfoRow label="付款人是否为买家" value={order.payerIsBuyer ? '是（与买家一致）' : '否（第三方付款）'} />
+        {/* 付款人基本信息 — 无论是否与买家一致都展示 */}
+        {(() => {
+          const effectiveType = order.payerIsBuyer ? order.buyerType : (order.payerType || '个人')
+          const effectiveName = order.payerIsBuyer ? order.buyerName : (order.payerName || '-')
+          const effectiveIdNo = order.payerIsBuyer ? order.buyerIdNo : (order.payerIdNo || '-')
+          return (
+            <>
+              <InfoRow label="付款人类型" value={effectiveType} />
+              <InfoRow label={effectiveType === '企业' ? '企业名称' : effectiveType === '个体工商户' ? '企业名称' : '付款人姓名'} value={effectiveName} />
+              <InfoRow label="证件号码" value={effectiveIdNo} />
+            </>
+          )
+        })()}
       </div>
+
+      {/* 银行卡信息 — 根据类型区分 */}
+      {(() => {
+        const effectiveType = order.payerIsBuyer ? order.buyerType : (order.payerType || '个人')
+        return (
+          <>
+            <div style={{ margin: '12px 16px 6px', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Landmark size={14} color="var(--weui-brand)" />
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--weui-FG-0)' }}>银行卡信息</span>
+              <span style={{
+                fontSize: 10, padding: '1px 6px', borderRadius: 4, fontWeight: 600,
+                background: effectiveType === '企业' ? 'rgba(22,119,255,0.1)' : effectiveType === '个体工商户' ? 'rgba(250,173,20,0.1)' : 'rgba(82,196,26,0.1)',
+                color: effectiveType === '企业' ? '#1677ff' : effectiveType === '个体工商户' ? '#faad14' : '#52c41a',
+              }}>{effectiveType}</span>
+            </div>
+            <div className="weui-cells" style={{ margin: '0 16px', borderRadius: 8, overflow: 'hidden' }}>
+              {/* 个人 */}
+              {effectiveType === '个人' && (
+                <>
+                  <InfoRow label="开户名" value={order.payerName || order.buyerName || '-'} />
+                  <InfoRow label="银行卡号" value={order.payerCardNo || '-'} />
+                  <InfoRow label="开户行" value={order.payerBank || '-'} />
+                  <InfoRow label="银行预留手机" value={order.payerPhone || '-'} />
+                </>
+              )}
+              {/* 企业 */}
+              {effectiveType === '企业' && (
+                <>
+                  <InfoRow label="对公账户名称" value={order.payerAccountName || '-'} />
+                  <InfoRow label="对公账号" value={order.payerCardNo || '-'} />
+                  <InfoRow label="所属银行" value={order.payerBank || '-'} />
+                </>
+              )}
+              {/* 个体工商户 */}
+              {effectiveType === '个体工商户' && (
+                <>
+                  <InfoRow label="银行卡类型" value={order.payerBankCardType || '-'} />
+                  <InfoRow label="账户类型" value={order.payerAccountType || '-'} />
+                  <InfoRow label="开户名" value={order.payerAccountName || order.payerName || order.buyerName || '-'} />
+                  <InfoRow label="银行卡号" value={order.payerCardNo || '-'} />
+                  <InfoRow label="银行名称" value={order.payerBank || '-'} />
+                  <InfoRow label="银行预留手机" value={order.payerPhone || '-'} />
+                </>
+              )}
+            </div>
+          </>
+        )
+      })()}
 
       {/* Signature */}
       <div className="section-hd">签名信息</div>

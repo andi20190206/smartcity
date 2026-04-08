@@ -1,19 +1,21 @@
 import { useState, useMemo } from 'react'
 import {
   Tabs, Table, Tag, Select, Input, Button, Space, Card, Modal,
-  Form, Switch, Slider, InputNumber, Checkbox, Tooltip, Badge, Timeline, Descriptions,
+  Form, Switch, Slider, InputNumber, Checkbox, Tooltip, Badge, Timeline, Descriptions, Popconfirm, message,
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import {
   SettingOutlined, HistoryOutlined, SearchOutlined, EditOutlined,
   UndoOutlined, BankOutlined, InfoCircleOutlined, CheckCircleOutlined,
   ExclamationCircleOutlined, BuildOutlined, DollarOutlined,
-  SafetyCertificateOutlined, DatabaseOutlined,
+  SafetyCertificateOutlined, DatabaseOutlined, PlusOutlined, DeleteOutlined,
 } from '@ant-design/icons'
 import {
   mockPlatformConfigs, mockCompanyOverrides, mockCompanyConfigs, mockConfigChangeLogs,
+  mockEndorsementInstitutions,
 } from '../../shared/mock/configMock'
-import type { ConfigItem, ConfigChangeLog, CompanyConfigOverride } from '../../shared/types/Config.types'
+import type { ConfigItem, ConfigChangeLog, CompanyConfigOverride, EndorsementInstitution } from '../../shared/types/Config.types'
+import dayjs from 'dayjs'
 
 const levelLabelMap: Record<string, { text: string; color: string }> = {
   platform: { text: '平台级', color: 'red' },
@@ -54,6 +56,9 @@ export default function ConfigCenterPC() {
   const [editModal, setEditModal] = useState<ConfigItem | null>(null)
   const [editValue, setEditValue] = useState<any>(null)
   const [logFilter, setLogFilter] = useState<string>('all')
+  const [institutionList, setInstitutionList] = useState<EndorsementInstitution[]>(mockEndorsementInstitutions)
+  const [addInstitutionOpen, setAddInstitutionOpen] = useState(false)
+  const [instForm] = Form.useForm()
 
   // 统计
   const stats = useMemo(() => {
@@ -177,6 +182,38 @@ export default function ConfigCenterPC() {
     },
   ]
 
+  const institutionColumns: ColumnsType<EndorsementInstitution> = [
+    {
+      title: '机构名称', dataIndex: 'name', key: 'name', width: 200,
+      render: (n: string) => <span style={{ fontWeight: 500 }}>{n}</span>,
+    },
+    {
+      title: '地址', key: 'address',
+      render: (_: unknown, r: EndorsementInstitution) => `${r.province}${r.city}${r.district}${r.addressDetail}`,
+    },
+    { title: '联系人', dataIndex: 'contact', key: 'contact', width: 100 },
+    {
+      title: '联系电话', dataIndex: 'phone', key: 'phone', width: 150,
+      render: (p: string) => <span style={{ fontFamily: "'DM Sans', monospace", fontSize: 13 }}>{p}</span>,
+    },
+    {
+      title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 170,
+      render: (t: string) => <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t}</span>,
+    },
+    {
+      title: '操作', key: 'action', width: 80, align: 'center',
+      render: (_: unknown, r: EndorsementInstitution) => (
+        <Popconfirm
+          title="确定删除该签注机构？"
+          onConfirm={() => setInstitutionList((prev) => prev.filter((i) => i.id !== r.id))}
+          okText="删除" cancelText="取消" okButtonProps={{ danger: true }}
+        >
+          <Button type="link" danger size="small" icon={<DeleteOutlined />}>删除</Button>
+        </Popconfirm>
+      ),
+    },
+  ]
+
   return (
     <div>
       {/* 统计卡片 */}
@@ -226,6 +263,7 @@ export default function ConfigCenterPC() {
             { key: 'platform', label: '平台默认配置' },
             { key: 'company', label: '经销公司配置' },
             { key: 'logs', label: '变更记录' },
+            { key: 'institutions', label: '签注机构' },
           ]}
         />
 
@@ -377,6 +415,23 @@ export default function ConfigCenterPC() {
             </div>
           </>
         )}
+
+        {/* ===== 签注机构 ===== */}
+        {activeTab === 'institutions' && (
+          <>
+            <div className="filter-bar" style={{ justifyContent: 'flex-end' }}>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => { instForm.resetFields(); setAddInstitutionOpen(true) }}>
+                新增签注机构
+              </Button>
+            </div>
+            <div className="table-card-body">
+              <Table
+                columns={institutionColumns} dataSource={institutionList} rowKey="id"
+                size="middle" pagination={{ pageSize: 10, showTotal: (total) => `共 ${total} 条` }}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* ===== 编辑配置弹窗 ===== */}
@@ -455,6 +510,57 @@ export default function ConfigCenterPC() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* ===== 新增签注机构弹窗 ===== */}
+      <Modal
+        title={<Space><PlusOutlined />新增签注机构</Space>}
+        open={addInstitutionOpen}
+        onCancel={() => setAddInstitutionOpen(false)}
+        footer={null}
+        width={480}
+        destroyOnClose
+      >
+        <Form form={instForm} layout="horizontal" labelCol={{ span: 6 }} wrapperCol={{ span: 16 }} style={{ marginTop: 16 }}>
+          <Form.Item label="机构名称" name="name" rules={[{ required: true, message: '请输入机构名称' }]}>
+            <Input placeholder="请输入签注机构名称" />
+          </Form.Item>
+          <Form.Item label="省" name="province" rules={[{ required: true, message: '请输入省份' }]}>
+            <Input placeholder="如：广东省" />
+          </Form.Item>
+          <Form.Item label="市" name="city" rules={[{ required: true, message: '请输入城市' }]}>
+            <Input placeholder="如：广州市" />
+          </Form.Item>
+          <Form.Item label="区" name="district" rules={[{ required: true, message: '请输入区县' }]}>
+            <Input placeholder="如：天河区" />
+          </Form.Item>
+          <Form.Item label="详细地址" name="addressDetail" rules={[{ required: true, message: '请输入详细地址' }]}>
+            <Input placeholder="街道/楼层/门牌等" />
+          </Form.Item>
+          <Form.Item label="联系人" name="contact" rules={[{ required: true, message: '请输入联系人' }]}>
+            <Input placeholder="请输入联系人姓名" />
+          </Form.Item>
+          <Form.Item label="联系电话" name="phone" rules={[{ required: true, message: '请输入联系电话' }]}>
+            <Input placeholder="请输入联系电话" />
+          </Form.Item>
+        </Form>
+        <div style={{ textAlign: 'right', marginTop: 8, paddingBottom: 8 }}>
+          <Space>
+            <Button onClick={() => setAddInstitutionOpen(false)}>取 消</Button>
+            <Button type="primary" onClick={() => {
+              instForm.validateFields().then((values) => {
+                const newInst: EndorsementInstitution = {
+                  id: `INST${Date.now()}`,
+                  ...values,
+                  createTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+                }
+                setInstitutionList((prev) => [newInst, ...prev])
+                message.success('签注机构添加成功')
+                setAddInstitutionOpen(false)
+              })
+            }}>确 定</Button>
+          </Space>
+        </div>
       </Modal>
     </div>
   )

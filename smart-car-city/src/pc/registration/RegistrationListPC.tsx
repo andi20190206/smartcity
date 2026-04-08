@@ -3,6 +3,7 @@ import { Table, Tag, Input, Select, Button, Space, Modal, Form, DatePicker, Uplo
 import type { ColumnsType } from 'antd/es/table'
 import { SearchOutlined, ReloadOutlined, ExportOutlined, PlusOutlined, WarningFilled, FileTextOutlined, EyeOutlined } from '@ant-design/icons'
 import { mockSupervisedVehicles } from '../../shared/mock/inventoryMock'
+import { mockEndorsementInstitutions } from '../../shared/mock/configMock'
 import type { SupervisedVehicle } from '../../shared/types/Inventory.types'
 import { carImages } from '../../shared/constants/carImages'
 import dayjs from 'dayjs'
@@ -21,6 +22,7 @@ interface EndorsementRecord {
   plateNo: string
   vin: string
   endorsementDate: string
+  institutionId?: string
   materials: string[]
 }
 
@@ -37,9 +39,9 @@ const initialRemarks: RemarkRecord[] = [
 
 /* ---- mock 签注记录 ---- */
 const initialEndorsements: EndorsementRecord[] = [
-  { vehicleId: 'SV001', plateNo: '粤A·12345', vin: 'LVHCV6637K50CLTS1', endorsementDate: '2026-03-05', materials: carImages.slice(0, 6) },
-  { vehicleId: 'SV004', plateNo: '湘C·11111', vin: 'LSVAM4187CN200001', endorsementDate: '2026-02-20', materials: carImages.slice(2, 5) },
-  { vehicleId: 'SV005', plateNo: '粤A·55667', vin: 'LHGBH541XNN100002', endorsementDate: '2026-01-15', materials: carImages.slice(4, 8) },
+  { vehicleId: 'SV001', plateNo: '粤A·12345', vin: 'LVHCV6637K50CLTS1', endorsementDate: '2026-03-05', institutionId: 'INST001', materials: carImages.slice(0, 6) },
+  { vehicleId: 'SV004', plateNo: '湘C·11111', vin: 'LSVAM4187CN200001', endorsementDate: '2026-02-20', institutionId: 'INST003', materials: carImages.slice(2, 5) },
+  { vehicleId: 'SV005', plateNo: '粤A·55667', vin: 'LHGBH541XNN100002', endorsementDate: '2026-01-15', institutionId: 'INST002', materials: carImages.slice(4, 8) },
 ]
 
 export default function RegistrationListPC() {
@@ -59,6 +61,8 @@ export default function RegistrationListPC() {
   const [endorseTarget, setEndorseTarget] = useState<SupervisedVehicle | null>(null)
   const [endorseDate, setEndorseDate] = useState<dayjs.Dayjs | null>(null)
   const [endorseFiles, setEndorseFiles] = useState<any[]>([])
+  const [endorseInstitution, setEndorseInstitution] = useState<string | undefined>()
+  const [institutionFilter, setInstitutionFilter] = useState<string | undefined>()
   const [endorseRecordOpen, setEndorseRecordOpen] = useState(false)
   const [endorseRecordTarget, setEndorseRecordTarget] = useState<SupervisedVehicle | null>(null)
   const [endorsements] = useState<EndorsementRecord[]>(initialEndorsements)
@@ -71,6 +75,10 @@ export default function RegistrationListPC() {
     let list = registrationVehicles
     if (regFilter) list = list.filter((v) => v.registrationStatus === regFilter)
     if (loanFilter) list = list.filter((v) => v.loanStatus === loanFilter)
+    if (institutionFilter) list = list.filter((v) => {
+      const rec = endorsements.find((e) => e.vehicleId === v.id)
+      return rec?.institutionId === institutionFilter
+    })
     if (searchText) {
       const s = searchText.toLowerCase()
       list = list.filter((v) =>
@@ -79,7 +87,7 @@ export default function RegistrationListPC() {
       )
     }
     return list
-  }, [searchText, regFilter, loanFilter, registrationVehicles])
+  }, [searchText, regFilter, loanFilter, institutionFilter, registrationVehicles, endorsements])
 
   const stats = useMemo(() => ({
     total: registrationVehicles.length,
@@ -125,11 +133,13 @@ export default function RegistrationListPC() {
     setEndorseTarget(record)
     setEndorseDate(null)
     setEndorseFiles([])
+    setEndorseInstitution(undefined)
     setEndorseModalOpen(true)
   }
 
   const handleEndorseConfirm = () => {
     if (!endorseDate) { message.warning('请选择签注日期'); return }
+    if (!endorseInstitution) { message.warning('请选择签注机构'); return }
     message.success('签注确认成功')
     setEndorseModalOpen(false)
   }
@@ -242,6 +252,10 @@ export default function RegistrationListPC() {
               { value: '待垫款', label: '待垫款' },
               { value: '已垫款', label: '已垫款' },
             ]}
+          />
+          <Select placeholder="签注机构" allowClear style={{ width: 180 }}
+            value={institutionFilter} onChange={setInstitutionFilter}
+            options={mockEndorsementInstitutions.map((i) => ({ value: i.id, label: i.name }))}
           />
         </div>
         <div className="table-card-body">
@@ -357,6 +371,15 @@ export default function RegistrationListPC() {
               placeholder="请选择签注日期"
             />
           </Form.Item>
+          <Form.Item label={<span><span style={{ color: '#ff4d4f' }}>*</span>签注机构</span>}>
+            <Select
+              placeholder="请选择签注机构"
+              style={{ width: '100%' }}
+              value={endorseInstitution}
+              onChange={setEndorseInstitution}
+              options={mockEndorsementInstitutions.map((i) => ({ value: i.id, label: i.name }))}
+            />
+          </Form.Item>
           <Form.Item label={
             <div style={{ lineHeight: '20px' }}>
               <div><span style={{ color: '#ff4d4f' }}>*</span>签注材料：</div>
@@ -409,6 +432,12 @@ export default function RegistrationListPC() {
             </Form.Item>
             <Form.Item label="签注日期">
               <Input value={currentEndorsement.endorsementDate} disabled style={{ background: '#fafafa', color: '#333' }} />
+            </Form.Item>
+            <Form.Item label="签注机构">
+              <Input
+                value={mockEndorsementInstitutions.find((i) => i.id === currentEndorsement.institutionId)?.name || '-'}
+                disabled style={{ background: '#fafafa', color: '#333' }}
+              />
             </Form.Item>
             <Form.Item label="签注材料">
               <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 8 }}>点击可查看大图</div>

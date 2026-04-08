@@ -54,3 +54,16 @@ export interface CompanyConfigOverride {
   overrideCount: number
   lastUpdateTime: string
 }
+
+/** 签注机构 */
+export interface EndorsementInstitution {
+  id: string
+  name: string
+  province: string
+  city: string
+  district: string
+  addressDetail: string
+  contact: string
+  phone: string
+  createTime: string
+}

@@ -1,4 +1,4 @@
-import type { ConfigItem, ConfigChangeLog, CompanyConfigOverride } from '../types/Config.types'
+import type { ConfigItem, ConfigChangeLog, CompanyConfigOverride, EndorsementInstitution } from '../types/Config.types'
 
 /** 平台级配置项 */
 export const mockPlatformConfigs: ConfigItem[] = [
@@ -214,5 +214,53 @@ export const mockConfigChangeLogs: ConfigChangeLog[] = [
     operator: '陈管理员', operatorRole: '平台管理员',
     level: 'platform',
     changeTime: '2026-03-17 09:30:00',
+  },
+]
+
+/** 签注机构 */
+export const mockEndorsementInstitutions: EndorsementInstitution[] = [
+  {
+    id: 'INST001',
+    name: '广州天河公证处',
+    province: '广东省',
+    city: '广州市',
+    district: '天河区',
+    addressDetail: '天河路385号太古汇二座2201室',
+    contact: '李文佳',
+    phone: '020-38826600',
+    createTime: '2026-01-10 09:00:00',
+  },
+  {
+    id: 'INST002',
+    name: '深圳南山区车辆管理所',
+    province: '广东省',
+    city: '深圳市',
+    district: '南山区',
+    addressDetail: '桃园路1号南山行政文化中心A座',
+    contact: '王晓明',
+    phone: '0755-86662000',
+    createTime: '2026-01-15 10:30:00',
+  },
+  {
+    id: 'INST003',
+    name: '长沙市公证处',
+    province: '湖南省',
+    city: '长沙市',
+    district: '岳麓区',
+    addressDetail: '麓山南路199号麓谷企业广场A栋801室',
+    contact: '张伟',
+    phone: '0731-88880001',
+    createTime: '2026-02-08 14:00:00',
+  },
+  {
+    id: 'INST004',
+    name: '武汉江汉公证处',
+    province: '湖北省',
+    city: '武汉市',
+    district: '江汉区',
+    addressDetail: '新华路特1号新华大厦12楼',
+    contact: '陈春燕',
+    phone: '027-85888866',
+    createTime: '2026-02-20 11:00:00',
   },
 ]
